@@ -1,0 +1,4 @@
+nimcache/
+src/wrap/gdal
+*.exe
+*.dll
