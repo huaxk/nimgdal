@@ -1,58 +1,50 @@
-import os, strformat, strutils
-import nimterop/[cimport, git]
-# import nimterop/paths
+import os
+import nimterop/cimport
 
-const
-  gdalversion = "2.2.4"
-  # baseDir = nimteropBuildDir()/"gdal"
-  baseDir = currentSourcePath.parentDir()
-
-when defined(windows):
+when defined(linux):
+  # install libgdal-dev
   const
+    dyngdal = "libgdal.so"
+    srcDir = "/usr/include/gdal"
+    gdalH = srcDir/"gdal.h"
+   
+  cIncludeDir(srcDir)
+
+elif defined(windows):
+  # only works on nimterop@0.1.0
+  import strutils, strformat
+  # import nimterop/[git, paths]
+
+  const
+    dyngdal = "libgdal.dll"
+    gdalversion = "2.2.4"
+    # baseDir = nimteropBuildDir()/"gdal"
+    baseDir = currentSourcePath.parentDir()
     srcDir = baseDir/"gdal"
     gdalH = srcDir/"gcore/gdal.h"
     srczipname = fmt"""gdal{gdalversion.replace(".")}.zip"""
+  # static:
+  #   gitPull("https://github.com/OSGeo/gdal", outdir=baseDir, plist="gdal/*\nautotest/*", checkout="v" & gdalversion)
+
+  #   if not gdalH.fileExists():
+  #     downloadUrl(fmt"http://download.osgeo.org/gdal/{srczipname}", outdir=baseDir)
+  #     # movefile(fmt"gdal-{gdalversion}", "gdal")
+  #     extractZip(baseDir/srczipname, baseDir)
+
+  #   cpFile(srcDir/"port/cpl_config.h.in", srcDir/"port/cpl_config.h")
+  #   cpFile(srcDir/"gcore/gdal_version.h.in", srcDir/"port/gdal_version.h")
      
   cIncludeDir(srcDir/"port")
   cIncludeDir(srcDir/"ogr")
-  cIncludeDir(srcDir/"gcore")
-elif defined(linux):
-  const
-    srcDir = "/usr/include/gdal"
-    gdalH = srcDir/"gdal.h"
-    srczipname = fmt"gdal-{gdalversion}.tar.xz"
-   
-  cIncludeDir(srcDir)
+  cIncludeDir(srcDir/"gcore")    
+
 else:
   static: doAssert false
 
 static:
-#   gitPull("https://github.com/OSGeo/gdal", outdir=baseDir, plist="""
-# gdal/*
-# autotest/*
-# """, checkout="v" & gdalversion)
-
-  # if not gdalH.fileExists():
-  #   downloadUrl(fmt"http://download.osgeo.org/gdal/{srczipname}", outdir=baseDir)
-  #   # movefile(fmt"gdal-{gdalversion}", "gdal")
-  #   extractZip(baseDir/srczipname, baseDir)
-
-  # cpFile(srcDir/"port/cpl_config.h.in", srcDir/"port/cpl_config.h")
-  # cpFile(srcDir/"gcore/gdal_version.h.in", srcDir/"port/gdal_version.h")
-
   # cDebug()
   # cDisableCaching()
   cSkipSymbol(@["stat", "stat64"])
-
-const
-  dyngdal = when defined(windows):
-    "libgdal.dll"
-  elif defined(linux):
-    "libgdal.so"
-  elif defined(macosx):
-    "libgdal.dylib"
-  else:
-    static: doAssert false
 
 cPlugin:
   import strutils
@@ -78,11 +70,11 @@ cOverride:
   type
     stat64* {.pure,final.} = object
     VSIStatBuf* = object
+    VSIStatBufL* = VSIStatBuf
     tm* = object
     OGRGeomFieldDefn = object
     OGRGeomFieldDefnH* = ptr OGRGeomFieldDefn
-    VSIStatBufL* = object # linux
-
+    
     GDALExtendedDataTypeHS* = object
     GDALExtendedDataTypeH* = ptr GDALExtendedDataTypeHS
     GDALEDTComponentHS* = object
