@@ -63,6 +63,8 @@ cPlugin:
     #     sym.name = sym.name.replace("OGR_L_").lowercaseAscii
     #   elif sym.name.contains("OGR_F_"):
     #     sym.name = sym.name.replace("OGR_F_").lowercaseAscii
+    #   elif sym.name.contains("OGR_DS_"):
+    #     sym.name = sym.name.replace("OGR_DS_").lowercaseAscii
     #   elif sym.name.contains("OGR_FD_"):
     #     sym.name = sym.name.replace("OGR_FD_").lowercaseAscii
 

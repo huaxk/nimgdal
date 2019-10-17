@@ -24,16 +24,16 @@ withOGROpen(ds, filename, false, nil):
   # for fdDefn in fDefn:
   #   echo fdDefn.OGR_Fld_GetNameRef, ": ", fdDefn.OGR_Fld_GetType
 
-  for feature in layer:
+  for ft in layer:
     for i, fld in layer.OGR_L_GetLayerDefn:
       echo fld.OGR_Fld_GetNameRef
       case fld.OGR_Fld_GetType
-      of OFTString: echo feature.OGR_F_GetFieldAsString(i)
-      of OFTReal: echo feature.OGR_F_GetFieldAsDouble(i)
-      of OFTInteger: echo feature.OGR_F_GetFieldAsInteger(i)
-      else: echo feature.OGR_F_GetFieldAsString(i)
+      of OFTString: echo ft.OGR_F_GetFieldAsString(i)
+      of OFTReal: echo ft.OGR_F_GetFieldAsDouble(i)
+      of OFTInteger: echo ft.OGR_F_GetFieldAsInteger(i)
+      else: echo ft.OGR_F_GetFieldAsString(i)
 
-    let geometry = feature.OGR_F_GetGeometryRef
+    let geometry = ft.OGR_F_GetGeometryRef
     if not isNil(geometry):
       echo geometry.OGR_G_GetGeometryType.OGRGeometryTypeToName
 
@@ -49,27 +49,27 @@ withOGROpen(ds, filename, false, nil):
 #     let hLayer = hDS.getLayer(0)
 #     hLayer.resetReading
 #     # let
-#     #   hFDefn: FeatureDefn = hLayer.getLayerDefn
+#     #   hFDefn: ftDefn = hLayer.getLayerDefn
 #       # fieldCount = hFDefn.getFieldCount
 
 #     # for i in 0 ..< fieldCount:
 #     #   let hFieldDefn = hFDefn.getFieldDefn(i)
 #     #   echo hFieldDefn.getNameRef, ": ", hFieldDefn.getType
 
-#     eachFeature(hFeature, hLayer):
+#     eachft(hft, hLayer):
 #       # let fieldIndex = hFDefn.getFieldIndex("NAME_NONLA")
-#       echo getStringField(hFeature, "NAME_NONLA")
+#       echo getStringField(hft, "NAME_NONLA")
 #       # for i in 0 ..< fieldCount:
 #       #   let hFieldDefn: FieldDefn = hFDefn.getFieldDefn(i)
 #       #   echo hFieldDefn.getNameRef, ": "
 #       #   case hFieldDefn.getType:
-#       #     of Integer: echo hFeature.getFieldAsInteger(i)
-#       #     of Integer64: echo hFeature.getFieldAsInteger64(i)
-#       #     of Real: echo hFeature.getFieldAsDouble(i)         
-#       #     of String: echo hFeature.getFieldAsString(i)
-#       #     else: echo hFeature.getFieldAsString(i)
+#       #     of Integer: echo hft.getFieldAsInteger(i)
+#       #     of Integer64: echo hft.getFieldAsInteger64(i)
+#       #     of Real: echo hft.getFieldAsDouble(i)         
+#       #     of String: echo hft.getFieldAsString(i)
+#       #     else: echo hft.getFieldAsString(i)
 
-#       let hGeometry = hFeature.getGeometryRef
+#       let hGeometry = hft.getGeometryRef
 #       if not isNil(hGeometry):
 #         case hGeometry.getGeometryType.flatten:
 #         of Point:
