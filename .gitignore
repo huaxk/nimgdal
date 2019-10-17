@@ -2,3 +2,6 @@ nimcache/
 src/wrap/gdal
 *.exe
 *.dll
+*.zip
+*.tar
+*.xz

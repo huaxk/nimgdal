@@ -1,8 +1,14 @@
-import os, strformat
+import os, strformat, strutils
 import nimterop/[cimport, git]
+# import nimterop/paths
 
 const
   gdalversion = "2.2.4"
+  srczipname = when defined(windows):
+    fmt"""gdal{gdalversion.replace(".")}.zip"""
+  else:
+    fmt"gdal-{gdalversion}.tar.xz"
+
   # baseDir = nimteropBuildDir()/"gdal"
   baseDir = currentSourcePath.parentDir()
   srcDir = baseDir/"gdal"
@@ -13,10 +19,12 @@ static:
 # gdal/*
 # autotest/*
 # """, checkout="v" & gdalversion)
-  if not gdalH.fileExists():
-    downloadUrl(fmt"http://download.osgeo.org/gdal/{gdalversion}/gdal-{gdalversion}.tar.xz", outdir=baseDir)
-  # movefile(fmt"gdal-{gdalversion}", "gdal")
-  # extractTar(fmt"gdal-{gdalversion}, outdir}.tar.xz", baseDir)
+
+  # if not gdalH.fileExists():
+  #   downloadUrl(fmt"http://download.osgeo.org/gdal/{srczipname}", outdir=baseDir)
+  #   # movefile(fmt"gdal-{gdalversion}", "gdal")
+  #   extractZip(baseDir/srczipname, baseDir)
+
   # cpFile(srcDir/"port/cpl_config.h.in", srcDir/"port/cpl_config.h")
   # cpFile(srcDir/"gcore/gdal_version.h.in", srcDir/"port/gdal_version.h")
 
