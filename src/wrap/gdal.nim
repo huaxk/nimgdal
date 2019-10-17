@@ -4,22 +4,29 @@ import nimterop/[cimport, git]
 const
   gdalversion = "2.2.4"
   # baseDir = nimteropBuildDir()/"gdal"
-  # headerDir = currentSourcePath.parentDir()/"generated/gdal"
   baseDir = currentSourcePath.parentDir()
-  headerDir = baseDir/"gdal"
-  gdalH = headerDir/"gcore/gdal.h"
+  srcDir = baseDir/"gdal"
+  gdalH = srcDir/"gcore/gdal.h"
 
 static:
-  # gitPull("https://github.com/OSGeo/gdal", outdir=baseDir, plist="gdal/*", checkout=gdalversion)
+#   gitPull("https://github.com/OSGeo/gdal", outdir=baseDir, plist="""
+# gdal/*
+# autotest/*
+# """, checkout="v" & gdalversion)
   if not gdalH.fileExists():
     downloadUrl(fmt"http://download.osgeo.org/gdal/{gdalversion}/gdal-{gdalversion}.tar.xz", outdir=baseDir)
+  # movefile(fmt"gdal-{gdalversion}", "gdal")
+  # extractTar(fmt"gdal-{gdalversion}, outdir}.tar.xz", baseDir)
+  # cpFile(srcDir/"port/cpl_config.h.in", srcDir/"port/cpl_config.h")
+  # cpFile(srcDir/"gcore/gdal_version.h.in", srcDir/"port/gdal_version.h")
+
   # cDebug()
   # cDisableCaching()
   cSkipSymbol(@["stat", "stat64"])
  
-cIncludeDir(headerDir/"port")
-cIncludeDir(headerDir/"ogr")
-cIncludeDir(headerDir/"gcore")
+cIncludeDir(srcDir/"port")
+cIncludeDir(srcDir/"ogr")
+cIncludeDir(srcDir/"gcore")
 
 const
   dyngdal = when defined(windows):
@@ -132,5 +139,5 @@ cOverride:
 
 cImport(gdalH, recurse=true, dynlib="dyngdal")
 
-echo GDALVersionInfo("VERSION_NUM")
-echo GDALVersionInfo("BUILD_INFO")
+echo "GDAL version: " & $GDALVersionInfo("VERSION_NUM")
+echo "BUILD_INFO:\n" & $GDALVersionInfo("BUILD_INFO")
