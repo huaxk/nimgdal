@@ -4,15 +4,27 @@ import nimterop/[cimport, git]
 
 const
   gdalversion = "2.2.4"
-  srczipname = when defined(windows):
-    fmt"""gdal{gdalversion.replace(".")}.zip"""
-  else:
-    fmt"gdal-{gdalversion}.tar.xz"
-
   # baseDir = nimteropBuildDir()/"gdal"
   baseDir = currentSourcePath.parentDir()
-  srcDir = baseDir/"gdal"
-  gdalH = srcDir/"gcore/gdal.h"
+
+when defined(windows):
+  const
+    srcDir = baseDir/"gdal"
+    gdalH = srcDir/"gcore/gdal.h"
+    srczipname = fmt"""gdal{gdalversion.replace(".")}.zip"""
+     
+  cIncludeDir(srcDir/"port")
+  cIncludeDir(srcDir/"ogr")
+  cIncludeDir(srcDir/"gcore")
+elif defined(linux):
+  const
+    srcDir = "/usr/include/gdal"
+    gdalH = srcDir/"gdal.h"
+    srczipname = fmt"gdal-{gdalversion}.tar.xz"
+   
+  cIncludeDir(srcDir)
+else:
+  static: doAssert false
 
 static:
 #   gitPull("https://github.com/OSGeo/gdal", outdir=baseDir, plist="""
@@ -31,10 +43,6 @@ static:
   # cDebug()
   # cDisableCaching()
   cSkipSymbol(@["stat", "stat64"])
- 
-cIncludeDir(srcDir/"port")
-cIncludeDir(srcDir/"ogr")
-cIncludeDir(srcDir/"gcore")
 
 const
   dyngdal = when defined(windows):
@@ -73,6 +81,7 @@ cOverride:
     tm* = object
     OGRGeomFieldDefn = object
     OGRGeomFieldDefnH* = ptr OGRGeomFieldDefn
+    VSIStatBufL* = object # linux
 
     GDALExtendedDataTypeHS* = object
     GDALExtendedDataTypeH* = ptr GDALExtendedDataTypeHS

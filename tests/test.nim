@@ -1,7 +1,7 @@
 import gdal
 
 const
-  filename = "C:/sources/data/region_shp"
+  filename = "/mnt/d/sources/data/region_shp"
 
 GDALAllRegister()
 # withGDALOpenEx(ds, filename, GDAL_OF_VECTOR, nil, nil, nil):
