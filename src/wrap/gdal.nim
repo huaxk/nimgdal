@@ -1,6 +1,11 @@
 import os
 import nimterop/cimport
 
+static:
+  # cDebug()
+  # cDisableCaching()
+  cSkipSymbol(@["stat", "stat64"])
+
 when defined(linux):
   # install libgdal-dev
   const
@@ -40,33 +45,6 @@ elif defined(windows):
 
 else:
   static: doAssert false
-
-static:
-  # cDebug()
-  # cDisableCaching()
-  cSkipSymbol(@["stat", "stat64"])
-
-cPlugin:
-  import strutils
-
-  proc lowercaseAscii(s: string): string =
-    if s.len == 0: result = ""
-    else: result = toLowerAscii(s[0]) & substr(s, 1)
-
-  proc onSymbol*(sym: var Symbol) {.exportc, dynlib.} =
-    sym.name = sym.name.strip(chars = {'_'})
-
-    # if sym.kind == nskProc:
-    #   if sym.name.contains("OGR_G_"):
-    #     sym.name = sym.name.replace("OGR_G_").lowercaseAscii
-    #   elif sym.name.contains("OGR_L_"):
-    #     sym.name = sym.name.replace("OGR_L_").lowercaseAscii
-    #   elif sym.name.contains("OGR_F_"):
-    #     sym.name = sym.name.replace("OGR_F_").lowercaseAscii
-    #   elif sym.name.contains("OGR_DS_"):
-    #     sym.name = sym.name.replace("OGR_DS_").lowercaseAscii
-    #   elif sym.name.contains("OGR_FD_"):
-    #     sym.name = sym.name.replace("OGR_FD_").lowercaseAscii
 
 cOverride:
   type
@@ -148,7 +126,44 @@ cOverride:
     GDALAsyncReader = object
     GDALAsyncReaderH* = ptr GDALAsyncReader
 
+cPlugin:
+  import strutils
+
+  # proc lowercaseAscii(s: string): string =
+  #   if s.len == 0: result = ""
+  #   else: result = toLowerAscii(s[0]) & substr(s, 1)
+
+  proc onSymbol*(sym: var Symbol) {.exportc, dynlib.} =
+    sym.name = sym.name.strip(chars = {'_'})
+
+    if sym.kind == nskProc:
+      if sym.name.contains("GDAL"):
+        sym.name = sym.name.replace("GDAL")
+      elif sym.name.contains("OGR_DS_"):
+        sym.name = sym.name.replace("OGR_DS_")
+      elif sym.name.contains("OGR_L_"):
+        sym.name = sym.name.replace("OGR_L_")
+      elif sym.name.contains("OGR_F_"):
+        sym.name = sym.name.replace("OGR_F_")
+      elif sym.name.contains("OGR_G_"):
+        sym.name = sym.name.replace("OGR_G_")
+      elif sym.name.contains("OGR_FD_"):
+        sym.name = sym.name.replace("OGR_FD_")
+
 cImport(gdalH, recurse=true, dynlib="dyngdal")
 
-echo "GDAL version: " & $GDALVersionInfo("VERSION_NUM")
-echo "BUILD_INFO:\n" & $GDALVersionInfo("BUILD_INFO")
+{.pragma: impgdalD, cdecl, dynlib: dyngdal.}
+{.pragma: impOGR_L, importC:"OGR_L_$1", impgdalD.}
+{.pragma: impOGR_DS, importC:"OGR_DS_$1", impgdalD.}
+{.pragma: impOGR_F, importC:"OGR_F_$1", impgdalD.}
+{.pragma: impOGR_G, importC:"OGR_G_$1", impgdalD.}
+{.pragma: impOGR_FD, importC:"OGR_FD_$1", impgdalD.}
+
+proc Destroy*(a1: OGRDataSourceH) {.impOGR_DS.}
+proc Destroy*(a1: OGRFeatureH) {.impOGR_F.}
+proc GetGeometryRef*(a1: OGRFeatureH): OGRGeometryH {.impOGR_F.}
+
+
+
+# echo "GDAL version: " & $versionInfo("VERSION_NUM")
+# echo "BUILD_INFO:\n" & $versionInfo("BUILD_INFO")

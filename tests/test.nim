@@ -3,16 +3,16 @@ import gdal
 const
   filename = "/mnt/d/sources/data/region_shp"
 
-GDALAllRegister()
+AllRegister()
 # withGDALOpenEx(ds, filename, GDAL_OF_VECTOR, nil, nil, nil):
 # withGDALOpen(ds, filename, GA_ReadOnly):
 withOGROpen(ds, filename, false, nil):
   let
-    layer = ds.OGR_DS_GetLayer(0)
+    layer = ds.GetLayer(0)
     # fDefn = layer.OGR_L_GetLayerDefn
     # fdCount = fDefn.OGR_FD_GetFieldCount
   # echo fieldCount
-  echo ds.OGR_DS_GetLayerCount
+  echo ds.GetLayerCount
 
   # for layer in ds:
   #   echo layer.OGR_L_GetName
@@ -25,17 +25,17 @@ withOGROpen(ds, filename, false, nil):
   #   echo fdDefn.OGR_Fld_GetNameRef, ": ", fdDefn.OGR_Fld_GetType
 
   for ft in layer:
-    for i, fld in layer.OGR_L_GetLayerDefn:
+    for i, fld in layer.GetLayerDefn:
       echo fld.OGR_Fld_GetNameRef
       case fld.OGR_Fld_GetType
-      of OFTString: echo ft.OGR_F_GetFieldAsString(i)
-      of OFTReal: echo ft.OGR_F_GetFieldAsDouble(i)
-      of OFTInteger: echo ft.OGR_F_GetFieldAsInteger(i)
-      else: echo ft.OGR_F_GetFieldAsString(i)
+      of OFTString: echo ft.GetFieldAsString(i)
+      of OFTReal: echo ft.GetFieldAsDouble(i)
+      of OFTInteger: echo ft.GetFieldAsInteger(i)
+      else: echo ft.GetFieldAsString(i)
 
-    let geometry = ft.OGR_F_GetGeometryRef
+    let geometry = ft.GetGeometryRef
     if not isNil(geometry):
-      echo geometry.OGR_G_GetGeometryType.OGRGeometryTypeToName
+      echo geometry.GetGeometryType.OGRGeometryTypeToName
 
 # var hPt = OGRGCreateGeometry(wkbPoint);
 

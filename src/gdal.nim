@@ -2,23 +2,23 @@ import wrap/gdal
 export gdal
 
 iterator items*(ds: OGRDataSourceH): OGRLayerH =
-  for i in 0 ..< ds.OGR_DS_GetLayerCount:
-    yield ds.OGR_DS_GetLayer(i)
+  for i in 0 ..< ds.GetLayerCount:
+    yield ds.GetLayer(i)
 
 iterator items*(layer: OGRLayerH): OGRFeatureH =
-  layer.OGR_L_ResetReading
+  layer.ResetReading
   while true:
-    var ft = layer.OGR_L_GetNextFeature
+    var ft = layer.GetNextFeature
     if isNil(ft):
       break
     try:
       yield ft
     finally:
-      ft.OGR_F_Destroy
+      ft.Destroy
 
 iterator pairs*(ftDefn: OGRFeatureDefnH): tuple[key: int32, val: OGRFieldDefnH] =
-  for i in 0 ..< ftDefn.OGR_FD_GetFieldCount:
-    yield (i, ftDefn.OGR_FD_GetFieldDefn(i))
+  for i in 0 ..< ftDefn.GetFieldCount:
+    yield (i, ftDefn.GetFieldDefn(i))
 
 template withGDALOpen*(hDS: untyped,
                   pszFilename: cstring,
@@ -59,4 +59,4 @@ template withOGROpen*(hDS: untyped,
   try:
     body
   finally:
-    hDS.OGR_DS_Destroy
+    hDS.Destroy
