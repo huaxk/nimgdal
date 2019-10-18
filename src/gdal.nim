@@ -16,6 +16,10 @@ iterator items*(layer: OGRLayerH): OGRFeatureH =
     finally:
       ft.Destroy
 
+# proc items*(ft: OGRFeatureH): OGRGeometryH =
+#   for i in ft.GetGeomFieldCount:
+#     yield ft.GetGeomFieldRef(i)
+
 iterator pairs*(ftDefn: OGRFeatureDefnH): tuple[key: int32, val: OGRFieldDefnH] =
   for i in 0 ..< ftDefn.GetFieldCount:
     yield (i, ftDefn.GetFieldDefn(i))
@@ -24,13 +28,14 @@ template withGDALOpen*(hDS: untyped,
                   pszFilename: cstring,
                   eAccess: GDALAccess,
                   body: untyped) =
-  var hDS = GDALOpen(pszFilename, eAccess)
+  var hDS = Open(pszFilename, eAccess)
   if isNil(hDS):
     quit("Open failed: " & pszFilename)
   try:
     body
   finally:
-    hDS.GDALClose
+    hDS.Close
+  
 
 template withGDALOpenEx*(hDS: untyped,
                   pszFilename: cstring,
@@ -39,21 +44,21 @@ template withGDALOpenEx*(hDS: untyped,
                   papszOpenOptions: cstring,
                   papszSiblingFiles: cstring,
                   body: untyped) =
-  var hDS = GDALOpenEx(pszFilename, nOpenFlags, papszAllowedDrivers,
+  var hDS = OpenEx(pszFilename, nOpenFlags, papszAllowedDrivers,
                 papszOpenOptions, papszSiblingFiles)
   if isNil(hDS):
     quit("Open failed: " & pszFilename)
   try:
     body
   finally:
-    hDS.GDALClose
+    hDS.Close
 
 template withOGROpen*(hDS: untyped,
                       pszName: string,
                       bUpdate: bool,
                       pahDriverList: OGRSFDriverH,
                       body: untyped) =
-  var hDS = OGROpen(pszName, cint(bUpdate), pahDriverList)
+  var hDS = Open(pszName, cint(bUpdate), pahDriverList)
   if isNil(hDS):
     quit("Open failed: " & pszName)
   try:

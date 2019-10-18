@@ -137,33 +137,66 @@ cPlugin:
     sym.name = sym.name.strip(chars = {'_'})
 
     if sym.kind == nskProc:
-      if sym.name.contains("GDAL"):
-        sym.name = sym.name.replace("GDAL")
+      if sym.name.contains("OGR_Dr_"):
+        sym.name = sym.name.replace("OGR_Dr_")
+      elif sym.name.contains("GDAL") and sym.name notin ["GDALAllRegister"]:
+        if sym.name.contains("GDALDataset"):
+          sym.name = sym.name.replace("GDALDataset")
+        else:
+          sym.name = sym.name.replace("GDAL")
       elif sym.name.contains("OGR_DS_"):
         sym.name = sym.name.replace("OGR_DS_")
       elif sym.name.contains("OGR_L_"):
         sym.name = sym.name.replace("OGR_L_")
       elif sym.name.contains("OGR_F_"):
         sym.name = sym.name.replace("OGR_F_")
-      elif sym.name.contains("OGR_G_"):
-        sym.name = sym.name.replace("OGR_G_")
       elif sym.name.contains("OGR_FD_"):
         sym.name = sym.name.replace("OGR_FD_")
+      elif sym.name.contains("OGR_Fld_"):
+        sym.name = sym.name.replace("OGR_Fld_")
+      elif sym.name.contains("OGR_G_"):
+        sym.name = sym.name.replace("OGR_G_")
+      elif sym.name.contains("OGR_GT_"):
+        sym.name = sym.name.replace("OGR_GT_")
+      elif sym.name.contains("OGR_GFld_"):
+        sym.name = sym.name.replace("OGR_GFld_")
+      elif sym.name.contains("OGR_SM_"):
+        sym.name = sym.name.replace("OGR_SM_")
+      elif sym.name.contains("OGR_ST_"):
+        sym.name = sym.name.replace("OGR_ST_")
+      elif sym.name.contains("OGR_STBL_"):
+        sym.name = sym.name.replace("OGR_STBL_")
+      elif sym.name.contains("OGR_"):
+        sym.name = sym.name.replace("OGR_")
+      elif sym.name.contains("OGR"):
+        sym.name = sym.name.replace("OGR")
 
 cImport(gdalH, recurse=true, dynlib="dyngdal")
 
 {.pragma: impgdalD, cdecl, dynlib: dyngdal.}
-{.pragma: impOGR_L, importC:"OGR_L_$1", impgdalD.}
+{.pragma: impGDALDataset, importC:"GDALDataset$1", impgdalD.}
+{.pragma: impGDAL, importC:"GDAL$1", impgdalD.}
 {.pragma: impOGR_DS, importC:"OGR_DS_$1", impgdalD.}
+{.pragma: impOGR_L, importC:"OGR_L_$1", impgdalD.}
 {.pragma: impOGR_F, importC:"OGR_F_$1", impgdalD.}
 {.pragma: impOGR_G, importC:"OGR_G_$1", impgdalD.}
 {.pragma: impOGR_FD, importC:"OGR_FD_$1", impgdalD.}
+{.pragma: impOGR, importC:"OGR$1", impgdalD.}
+
+proc GetLayerByName*(a1: GDALDatasetH, a2: cstring): OGRLayerH {.impGDALDataset.}
+proc GetLayer*(a1: GDALDatasetH, a2: cint): OGRLayerH {.impGDALDataset.}
+proc GetLayerCount*(a1: GDALDatasetH): cint {.impGDALDataset.}
+
+proc Open*(a1: cstring, a2: GDALAccess): GDALDatasetH {.impGDAL.}
 
 proc Destroy*(a1: OGRDataSourceH) {.impOGR_DS.}
+
 proc Destroy*(a1: OGRFeatureH) {.impOGR_F.}
 proc GetGeometryRef*(a1: OGRFeatureH): OGRGeometryH {.impOGR_F.}
+proc GetGeomFieldCount*(hFeat: OGRFeatureH): cint {.impOGR_F.}
+
+proc Open*(a1: cstring, a2: cint, a3: ptr OGRSFDriverH): OGRDataSourceH {.impOGR.}
 
 
-
-# echo "GDAL version: " & $versionInfo("VERSION_NUM")
-# echo "BUILD_INFO:\n" & $versionInfo("BUILD_INFO")
+echo "GDAL version: " & $VersionInfo("VERSION_NUM")
+echo "BUILD_INFO:\n" & $VersionInfo("BUILD_INFO")
