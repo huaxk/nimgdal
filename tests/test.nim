@@ -1,14 +1,15 @@
-import gdal
+import os, gdal
 
 const
-  filename = "/mnt/d/sources/data/region_shp"
+  # filename = "c:/sources/data/region_shp"
+  filename = currentSourcePath.parentDir()/"data/point.json"
 
 GDALAllRegister()
 withGDALOpenEx(ds, filename, GDAL_OF_VECTOR, nil, nil, nil):
 # withOGROpen(ds, filename, false, nil):
   let
-    # layer = ds.GetLayer(0)
-    layer = ds.GetLayerByName("CHN_adm0")
+    layer = ds.GetLayer(0)
+    # layer = ds.GetLayerByName("CHN_adm0")
   echo ds.GetLayerCount
   echo layer.GetLayerDefn.GetName
 

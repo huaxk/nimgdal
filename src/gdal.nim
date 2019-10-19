@@ -16,7 +16,7 @@ iterator items*(layer: OGRLayerH): OGRFeatureH =
     finally:
       ft.Destroy
 
-# proc items*(ft: OGRFeatureH): OGRGeometryH =
+# iterator items*(ft: OGRFeatureH): OGRGeometryH =
 #   for i in ft.GetGeomFieldCount:
 #     yield ft.GetGeomFieldRef(i)
 

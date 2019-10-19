@@ -191,9 +191,11 @@ proc Open*(a1: cstring, a2: GDALAccess): GDALDatasetH {.impGDAL.}
 
 proc Destroy*(a1: OGRDataSourceH) {.impOGR_DS.}
 
+proc Create*(a1: OGRFeatureDefnH): OGRFeatureH {.impOGR_F.}
 proc Destroy*(a1: OGRFeatureH) {.impOGR_F.}
 proc GetGeometryRef*(a1: OGRFeatureH): OGRGeometryH {.impOGR_F.}
 proc GetGeomFieldCount*(hFeat: OGRFeatureH): cint {.impOGR_F.}
+proc GetFieldIndex*(a1: OGRFeatureH, a2: cstring): cint {.impOGR_F.}
 
 proc Open*(a1: cstring, a2: cint, a3: ptr OGRSFDriverH): OGRDataSourceH {.impOGR.}
 
