@@ -59,13 +59,18 @@ suite "test ogr api":
 
   test "write to OGR":
     let
-      pointSharpFile = dataDir/"point_out.shp"
+      pointShapeFile = dataDir/"point_out.shp"
       driver = GetDriverByName("ESRI Shapefile")
-      ds = driver.CreateDataSource(pointSharpFile, nil)
-      layer = ds.CreateLayer("point_out", nil, wkbPoint, nil)
-      fieldDefn = Create("Name", OFTString)
+    check not isNil(driver)
+    let ds = driver.CreateDataSource(pointShapeFile, nil)
+    check not isNil(ds)
+    let layer = ds.CreateLayer("point_out", nil, wkbPoint, nil)
+    check not isNil(layer)
+    let fieldDefn = Create("Name", OFTString)
+    check not isNil(fieldDefn)
     fieldDefn.SetWidth(32)
-    # check layer.CreateField(fieldDefn, TRUE) == OGRERR_NONE
+    check fieldDefn.GetWidth == 32
+    check layer.CreateField(fieldDefn, TRUE) == OGRERR_NONE
     fieldDefn.Destroy
 
     # let
