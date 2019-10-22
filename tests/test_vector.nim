@@ -1,72 +1,73 @@
 import os, unittest, strutils
-import gdal
+import ogr
 
 const dataDir = currentSourcePath.parentDir()/"data"
 const filename = dataDir/"point.json"
 
 suite "test ogr api":
   setup:
-    GDALAllRegister()
+    registerAll()
 
   test "OGR openEx":
-    let ds = OpenEx(filename, GDAL_OF_VECTOR, nil, nil, nil)
+    let ds = open(filename, FALSE, nil)
     check:
       not isNil(ds)
-      ds.GetLayerCount == 1
-    let layer = ds.GetLayer(0)
-    let layerName = if parseInt($VersionInfo("VERSION_NUM")) >= 2020000: "point" else: "OGRGeoJSON"
-    let layerByName = ds.GetLayerByName(layerName)
+      ds.getLayerCount == 1
+    let layer = ds.getLayer(0)
+    # let layerName = if parseInt($VersionInfo("VERSION_NUM")) >= 2020000: "point" else: "OGRGeoJSON"
+    let layerName = "point"
+    let layerByName = ds.getLayerByName(layerName)
     check layer == layerByName
 
-    layer.ResetReading
+    layer.resetReading
 
-    let featureDefn = layer.GetLayerDefn
-    check featureDefn.GetFieldCount == 2
+    let featureDefn = layer.getLayerDefn
+    check featureDefn.getFieldCount == 2
 
     let
-      fieldDefn0 = featureDefn.GetFieldDefn(0)
-      fieldDefn1 = featureDefn.GetFieldDefn(1)
+      fieldDefn0 = featureDefn.getFieldDefn(0)
+      fieldDefn1 = featureDefn.getFieldDefn(1)
     check:
-      fieldDefn0.GetType == OFTReal
-      fieldDefn1.GetType == OFTString
+      fieldDefn0.getType == OFTReal
+      fieldDefn1.getType == OFTString
 
-    var feature = layer.GetNextFeature
+    var feature = layer.getNextFeature
     check:
       not isNil(feature)
-      feature.GetFieldAsDouble(0) == 2.0
-      feature.GetFieldAsString(1) == "point-a"
-    feature = layer.GetNextFeature
+      feature.getFieldAsDouble(0) == 2.0
+      feature.getFieldAsString(1) == "point-a"
+    feature = layer.getNextFeature
     check:
       not isNil(feature)
-      feature.GetFieldAsDouble(0) == 3.0
-      feature.GetFieldAsString(1) == "point-b"      
+      feature.getFieldAsDouble(0) == 3.0
+      feature.getFieldAsString(1) == "point-b"      
 
-    let geometry = feature.GetGeometryRef
+    let geometry = feature.getGeometryRef
     check:
-      geometry.GetGeometryName == "POINT"
-      geometry.GetGeometryType == wkbPoint
-      featureDefn.GetGeomFieldCount == 1
-      geometry.GetX(0) == 100.2785
-      geometry.GetY(0) == 0.0893
+      geometry.getGeometryName == "POINT"
+      geometry.getGeometryType == wkbPoint
+      featureDefn.getGeomFieldCount == 1
+      geometry.getX(0) == 100.2785
+      geometry.getY(0) == 0.0893
 
-    check $geometry.ExportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
+    check $geometry.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
     # var wkt: cstring = ""
     # var pwkt: ptr cstring = wkt.addr
     # check geometry.ExportToWkt(pwkt) == OGRERR_NONE
 
-    feature.Destroy
-    ds.Close
+    feature.destroy
+    ds.destroy
 
   test "write to OGR":
     let
       pointSharpFile = dataDir/"point_out.shp"
-      driver = GetDriverByName("ESRI Shapefile")
-      ds = driver.CreateDataSource(pointSharpFile, nil)
-      layer = ds.CreateLayer("point_out", nil, wkbPoint, nil)
-      fieldDefn = Create("Name", OFTString)
-    fieldDefn.SetWidth(32)
+      driver = getDriverByName("ESRI Shapefile")
+      ds = driver.createDataSource(pointSharpFile, nil)
+      layer = ds.createLayer("point_out", nil, wkbPoint, nil)
+      fieldDefn = create("Name", OFTString)
+    fieldDefn.setWidth(32)
     # check layer.CreateField(fieldDefn, TRUE) == OGRERR_NONE
-    fieldDefn.Destroy
+    fieldDefn.destroy
 
     # let
     #   featureDefn = layer.GetLayerDefn

@@ -87,39 +87,39 @@ type
 
 
 
-proc OGRGeometryTypeToName*(eType: OGRwkbGeometryType): cstring {.stdcall,
+proc geometryTypeToName*(eType: OGRwkbGeometryType): cstring {.stdcall,
     importc: "OGRGeometryTypeToName", dynlib: dynlibogr_core.}
-proc OGRMergeGeometryTypes*(eMain: OGRwkbGeometryType; eExtra: OGRwkbGeometryType): OGRwkbGeometryType {.
+proc mergeGeometryTypes*(eMain: OGRwkbGeometryType; eExtra: OGRwkbGeometryType): OGRwkbGeometryType {.
     stdcall, importc: "OGRMergeGeometryTypes", dynlib: dynlibogr_core.}
-proc OGRMergeGeometryTypesEx*(eMain: OGRwkbGeometryType;
+proc mergeGeometryTypesEx*(eMain: OGRwkbGeometryType;
                              eExtra: OGRwkbGeometryType;
                              bAllowPromotingToCurves: cint): OGRwkbGeometryType {.
     stdcall, importc: "OGRMergeGeometryTypesEx", dynlib: dynlibogr_core.}
-proc OGR_GT_Flatten*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc flatten*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_Flatten", dynlib: dynlibogr_core.}
-proc OGR_GT_SetZ*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc setZ*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_SetZ", dynlib: dynlibogr_core.}
-proc OGR_GT_SetM*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc setM*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_SetM", dynlib: dynlibogr_core.}
-proc OGR_GT_SetModifier*(eType: OGRwkbGeometryType; bSetZ: cint; bSetM: cint): OGRwkbGeometryType {.
+proc setModifier*(eType: OGRwkbGeometryType; bSetZ: cint; bSetM: cint): OGRwkbGeometryType {.
     stdcall, importc: "OGR_GT_SetModifier", dynlib: dynlibogr_core.}
-proc OGR_GT_HasZ*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasZ",
+proc hasZ*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasZ",
     dynlib: dynlibogr_core.}
-proc OGR_GT_HasM*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasM",
+proc hasM*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasM",
     dynlib: dynlibogr_core.}
-proc OGR_GT_IsSubClassOf*(eType: OGRwkbGeometryType; eSuperType: OGRwkbGeometryType): cint {.
+proc isSubClassOf*(eType: OGRwkbGeometryType; eSuperType: OGRwkbGeometryType): cint {.
     stdcall, importc: "OGR_GT_IsSubClassOf", dynlib: dynlibogr_core.}
-proc OGR_GT_IsCurve*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isCurve*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsCurve", dynlib: dynlibogr_core.}
-proc OGR_GT_IsSurface*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isSurface*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsSurface", dynlib: dynlibogr_core.}
-proc OGR_GT_IsNonLinear*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isNonLinear*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsNonLinear", dynlib: dynlibogr_core.}
-proc OGR_GT_GetCollection*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getCollection*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetCollection", dynlib: dynlibogr_core.}
-proc OGR_GT_GetCurve*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getCurve*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetCurve", dynlib: dynlibogr_core.}
-proc OGR_GT_GetLinear*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getLinear*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetLinear", dynlib: dynlibogr_core.}
 type
   #INNER_C_STRUCT_temp-ogr_core.nim_213* {.bycopy.} = object
@@ -190,7 +190,7 @@ type
 #  OFSTMaxSubType = OFSTFloat32
 
 
-proc OGRParseDate*(pszInput: cstring; psOutput: ptr OGRField; nOptions: cint): cint {.
+proc parseDate*(pszInput: cstring; psOutput: ptr OGRField; nOptions: cint): cint {.
     stdcall, importc: "OGRParseDate", dynlib: dynlibogr_core.}
 type
   OGRSTClassId* {.size: sizeof(cint).} = enum
@@ -227,8 +227,8 @@ type
 
 
 
-proc GDALVersionInfo*(a1: cstring): cstring {.stdcall, importc: "GDALVersionInfo",
+proc versionInfo*(a1: cstring): cstring {.stdcall, importc: "GDALVersionInfo",
     dynlib: dynlibogr_core.}
-proc GDALCheckVersion*(nVersionMajor: cint; nVersionMinor: cint;
+proc checkVersion*(nVersionMajor: cint; nVersionMinor: cint;
                       pszCallingComponentName: cstring): cint {.stdcall,
     importc: "GDALCheckVersion", dynlib: dynlibogr_core.}

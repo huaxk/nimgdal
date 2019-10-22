@@ -38,4 +38,4 @@ type
   GUIntBig* = culonglong
   GInt64* = GIntBig
   GUInt64* = GUIntBig
-  GPtrDiff_t* = GIntBig
+  GPtrDiff_t* = cint

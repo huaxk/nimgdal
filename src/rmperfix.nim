@@ -2,8 +2,13 @@ import os, strutils
 import regex
 
 let baseDir = currentSourcePath.parentDir()
-let filename = baseDir/"wrap/ogr_api.nim"
-let outputfile = baseDir/"ogr_api.nim"
+let inputfiles = [
+  baseDir/"wrap/ogr_api.nim",
+  baseDir/"wrap/ogr_core.nim",
+  baseDir/"wrap/cpl_progress.nim",
+  baseDir/"wrap/cpl_minixml.nim",
+]
+# let outputfile = baseDir/"wrap/wrap_ogr_api.nim"
 
 let replacePerfixes = [
   "OGR_DS_",
@@ -16,13 +21,17 @@ let replacePerfixes = [
   "OGR_SM_",
   "OGR_ST_",
   "OGR_STBL_",
+  "OGR_GT_",
   "OGR_",
   "OGR",
+  "GDAL",
+  "CPL",
 ]
 
 let ignoreProcs = [
-  "OGROpen",
-  "OGRGetDriverCount"
+  # "OGROpen",
+  # "OGRGetDriverCount",
+  ""
 ]
 
 proc rmperfixAndLowercase(m: RegexMatch, s: string): string =
@@ -34,12 +43,11 @@ proc rmperfixAndLowercase(m: RegexMatch, s: string): string =
   else:
     result = "proc " & toLowerAscii(newProcName[0]) & substr(newProcName, 1) & "*" & s[m.group(2)[0]]
 
-var content = readFile(filename)
-for prefix in replacePerfixes:
-  # let rexp = """proc (""" & prefix & """)(.*)\*\(([\s\S]*?)\):(.*)[\s\S]\{\.([\s\S]*?)\.\}"""
-  let rexp = """proc (""" & prefix & """)(.*)\*(.*)"""
-  content = content.replace(re(rexp), rmperfixAndLowercase)
-  # content = content.replace(re(fmt"""proc ({prefix})(.*)\*(.*)"""),
-  #                           rmperfixAndLowercase)
+for file in inputfiles:
+  var content = readFile(file)
+  for prefix in replacePerfixes:
+    let rexp = """proc (""" & prefix & """)(.*)\*(.*)"""
+    content = content.replace(re(rexp), rmperfixAndLowercase)
 
-writeFile(outputfile, content)
+  let outputfile = file.replace(re"""(.*)\/(.*)""", "$1/wrap_$2")
+  writeFile(outputfile, content)
