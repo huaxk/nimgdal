@@ -16,13 +16,13 @@ const
 #  _LARGEFILE64_SOURCE* = 1
 #  __MSVCRT_VERSION__* = 0x00000700
 #  _XOPEN_SOURCE* = 600
-  HAVE_CXX11* = 1
+  HAVE_CXX14* = 1
+  HAVE_CXX17* = 1
 #  CPL_HAS_GINT64* = 1
-  CPL_HAS_GINT64* = 1
 #  HAS_CPL_INLINE* = 1
   HAS_CPL_INLINE* = 1
-  NULL* = 0
   M_PI* = 3.141592653589793
+#  CPL_FINAL* = f
 #  FALSE* = f
   FALSE* = 0
   TRUE* = 1
@@ -39,3 +39,4 @@ type
   GInt64* = GIntBig
   GUInt64* = GUIntBig
   GPtrDiff_t* = cint
+  CSLConstList* = cstringArray

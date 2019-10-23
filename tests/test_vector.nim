@@ -5,6 +5,8 @@ const dataDir = currentSourcePath.parentDir()/"data"
 const filename = dataDir/"point.json"
 
 suite "test ogr api":
+  echo versionInfo("GDAL_VERSION_NUM")
+  
   setup:
     registerAll()
 

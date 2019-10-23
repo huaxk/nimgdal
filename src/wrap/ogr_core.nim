@@ -1,4 +1,4 @@
-#import wrap/cpl_port
+#import wrap/raw/cpl_port
 when defined(Windows):
   const dynlibogr_core = "libgdal.dll"
 
@@ -55,6 +55,17 @@ type
     MinZ*: cdouble
     MaxZ*: cdouble
 
+
+proc malloc*(a1: csize): pointer {.stdcall, importc: "OGRMalloc",
+                                  dynlib: dynlibogr_core.}
+proc calloc*(a1: csize; a2: csize): pointer {.stdcall, importc: "OGRCalloc",
+    dynlib: dynlibogr_core.}
+proc realloc*(a1: pointer; a2: csize): pointer {.stdcall, importc: "OGRRealloc",
+    dynlib: dynlibogr_core.}
+proc strdup*(a1: cstring): cstring {.stdcall, importc: "OGRStrdup",
+                                    dynlib: dynlibogr_core.}
+proc free*(a1: pointer) {.stdcall, importc: "OGRFree", dynlib: dynlibogr_core.}
+type
   OGRErr* = cint
   OGRBoolean* = cint
   OGRwkbGeometryType* {.size: sizeof(cint).} = enum
@@ -87,67 +98,67 @@ type
 
 
 
-proc OGRGeometryTypeToName*(eType: OGRwkbGeometryType): cstring {.stdcall,
+proc geometryTypeToName*(eType: OGRwkbGeometryType): cstring {.stdcall,
     importc: "OGRGeometryTypeToName", dynlib: dynlibogr_core.}
-proc OGRMergeGeometryTypes*(eMain: OGRwkbGeometryType; eExtra: OGRwkbGeometryType): OGRwkbGeometryType {.
+proc mergeGeometryTypes*(eMain: OGRwkbGeometryType; eExtra: OGRwkbGeometryType): OGRwkbGeometryType {.
     stdcall, importc: "OGRMergeGeometryTypes", dynlib: dynlibogr_core.}
-proc OGRMergeGeometryTypesEx*(eMain: OGRwkbGeometryType;
+proc mergeGeometryTypesEx*(eMain: OGRwkbGeometryType;
                              eExtra: OGRwkbGeometryType;
                              bAllowPromotingToCurves: cint): OGRwkbGeometryType {.
     stdcall, importc: "OGRMergeGeometryTypesEx", dynlib: dynlibogr_core.}
-proc OGR_GT_Flatten*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc flatten*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_Flatten", dynlib: dynlibogr_core.}
-proc OGR_GT_SetZ*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc setZ*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_SetZ", dynlib: dynlibogr_core.}
-proc OGR_GT_SetM*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc setM*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_SetM", dynlib: dynlibogr_core.}
-proc OGR_GT_SetModifier*(eType: OGRwkbGeometryType; bSetZ: cint; bSetM: cint): OGRwkbGeometryType {.
+proc setModifier*(eType: OGRwkbGeometryType; bSetZ: cint; bSetM: cint): OGRwkbGeometryType {.
     stdcall, importc: "OGR_GT_SetModifier", dynlib: dynlibogr_core.}
-proc OGR_GT_HasZ*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasZ",
+proc hasZ*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasZ",
     dynlib: dynlibogr_core.}
-proc OGR_GT_HasM*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasM",
+proc hasM*(eType: OGRwkbGeometryType): cint {.stdcall, importc: "OGR_GT_HasM",
     dynlib: dynlibogr_core.}
-proc OGR_GT_IsSubClassOf*(eType: OGRwkbGeometryType; eSuperType: OGRwkbGeometryType): cint {.
+proc isSubClassOf*(eType: OGRwkbGeometryType; eSuperType: OGRwkbGeometryType): cint {.
     stdcall, importc: "OGR_GT_IsSubClassOf", dynlib: dynlibogr_core.}
-proc OGR_GT_IsCurve*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isCurve*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsCurve", dynlib: dynlibogr_core.}
-proc OGR_GT_IsSurface*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isSurface*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsSurface", dynlib: dynlibogr_core.}
-proc OGR_GT_IsNonLinear*(a1: OGRwkbGeometryType): cint {.stdcall,
+proc isNonLinear*(a1: OGRwkbGeometryType): cint {.stdcall,
     importc: "OGR_GT_IsNonLinear", dynlib: dynlibogr_core.}
-proc OGR_GT_GetCollection*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getCollection*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetCollection", dynlib: dynlibogr_core.}
-proc OGR_GT_GetCurve*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getCurve*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetCurve", dynlib: dynlibogr_core.}
-proc OGR_GT_GetLinear*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
+proc getLinear*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetLinear", dynlib: dynlibogr_core.}
 type
-  #INNER_C_STRUCT_temp-ogr_core.nim_213* {.bycopy.} = object
+  #INNER_C_STRUCT_temp-ogr_core.nim_219* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr cint
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_217* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_223* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr GIntBig
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_221* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_227* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr cdouble
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_225* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_231* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: cstringArray
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_229* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_235* {.bycopy.} = object
 #    nCount*: cint
 #    paData*: ptr GByte
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_233* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_239* {.bycopy.} = object
 #    nMarker1*: cint
 #    nMarker2*: cint
 #    nMarker3*: cint
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_238* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_244* {.bycopy.} = object
 #    Year*: GInt16
 #    Month*: GByte
 #    Day*: GByte
@@ -164,7 +175,7 @@ type
     OFTStringList = 5, OFTWideString = 6, OFTWideStringList = 7, OFTBinary = 8, OFTDate = 9,
     OFTTime = 10, OFTDateTime = 11, OFTInteger64 = 12, OFTInteger64List = 13
   OGRFieldSubType* {.size: sizeof(cint).} = enum
-    OFSTNone = 0, OFSTBoolean = 1, OFSTInt16 = 2, OFSTFloat32 = 3
+    OFSTNone = 0, OFSTBoolean = 1, OFSTInt16 = 2, OFSTFloat32 = 3, OFSTJSON = 4
   OGRJustification* {.size: sizeof(cint).} = enum
     OJUndefined = 0, OJLeft = 1, OJRight = 2
   OGRField* {.bycopy.} = object
@@ -173,13 +184,13 @@ type
 #    Integer64*: GIntBig
 #    Real*: cdouble
 #    String*: cstring
-#    IntegerList*: INNER_C_STRUCT_temp-ogr_core.nim_213
-#    Integer64List*: INNER_C_STRUCT_temp-ogr_core.nim_217
-#    RealList*: INNER_C_STRUCT_temp-ogr_core.nim_221
-#    StringList*: INNER_C_STRUCT_temp-ogr_core.nim_225
-#    Binary*: INNER_C_STRUCT_temp-ogr_core.nim_229
-#    Set*: INNER_C_STRUCT_temp-ogr_core.nim_233
-#    Date*: INNER_C_STRUCT_temp-ogr_core.nim_238
+#    IntegerList*: INNER_C_STRUCT_temp-ogr_core.nim_219
+#    Integer64List*: INNER_C_STRUCT_temp-ogr_core.nim_223
+#    RealList*: INNER_C_STRUCT_temp-ogr_core.nim_227
+#    StringList*: INNER_C_STRUCT_temp-ogr_core.nim_231
+#    Binary*: INNER_C_STRUCT_temp-ogr_core.nim_235
+#    Set*: INNER_C_STRUCT_temp-ogr_core.nim_239
+#    Date*: INNER_C_STRUCT_temp-ogr_core.nim_244
 
 
 
@@ -187,10 +198,10 @@ type
 #  OFTMaxType = OFTInteger64List
 
 #const
-#  OFSTMaxSubType = OFSTFloat32
+#  OFSTMaxSubType = OFSTJSON
 
 
-proc OGRParseDate*(pszInput: cstring; psOutput: ptr OGRField; nOptions: cint): cint {.
+proc parseDate*(pszInput: cstring; psOutput: ptr OGRField; nOptions: cint): cint {.
     stdcall, importc: "OGRParseDate", dynlib: dynlibogr_core.}
 type
   OGRSTClassId* {.size: sizeof(cint).} = enum
@@ -227,8 +238,8 @@ type
 
 
 
-proc GDALVersionInfo*(a1: cstring): cstring {.stdcall, importc: "GDALVersionInfo",
+proc versionInfo*(a1: cstring): cstring {.stdcall, importc: "GDALVersionInfo",
     dynlib: dynlibogr_core.}
-proc GDALCheckVersion*(nVersionMajor: cint; nVersionMinor: cint;
+proc checkVersion*(nVersionMajor: cint; nVersionMinor: cint;
                       pszCallingComponentName: cstring): cint {.stdcall,
     importc: "GDALCheckVersion", dynlib: dynlibogr_core.}

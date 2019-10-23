@@ -2,13 +2,14 @@ import os, strutils
 import regex
 
 let baseDir = currentSourcePath.parentDir()
+echo baseDir
 let inputfiles = [
-  baseDir/"wrap/ogr_api.nim",
-  baseDir/"wrap/ogr_core.nim",
-  baseDir/"wrap/cpl_progress.nim",
-  baseDir/"wrap/cpl_minixml.nim",
+  baseDir/"wrap/raw/ogr_api.nim",
+  baseDir/"wrap/raw/ogr_core.nim",
+  baseDir/"wrap/raw/cpl_port.nim",
+  baseDir/"wrap/raw/cpl_progress.nim",
+  baseDir/"wrap/raw/cpl_minixml.nim",
 ]
-# let outputfile = baseDir/"wrap/wrap_ogr_api.nim"
 
 let replacePerfixes = [
   "OGR_DS_",
@@ -43,11 +44,17 @@ proc rmperfixAndLowercase(m: RegexMatch, s: string): string =
   else:
     result = "proc " & toLowerAscii(newProcName[0]) & substr(newProcName, 1) & "*" & s[m.group(2)[0]]
 
-for file in inputfiles:
-  var content = readFile(file)
+for filename in inputfiles:
+  # var file = open(filename)
+  # var content = file.readAll()
+  var content = readFile(filename)
   for prefix in replacePerfixes:
     let rexp = """proc (""" & prefix & """)(.*)\*(.*)"""
     content = content.replace(re(rexp), rmperfixAndLowercase)
+  # file.close()
 
-  let outputfile = file.replace(re"""(.*)\/(.*)""", "$1/wrap_$2")
+  let outputfile = filename.replace(re"""(.*/)raw/(.*)""", "$1$2")
+  # file = open(outputfile, fmWrite)
+  # file.write(content)
+  # file.close()
   writeFile(outputfile, content)

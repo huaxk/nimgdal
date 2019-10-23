@@ -1,5 +1,5 @@
-import wrap/wrap_ogr_api
-export wrap_ogr_api
+import wrap/ogr_api
+export ogr_api
 
 iterator items*(ds: OGRDataSourceH): OGRLayerH =
   for i in 0 ..< ds.getLayerCount:
