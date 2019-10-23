@@ -1,5 +1,5 @@
 nimcache/
-src/wrap/gdal
+src/wrap/raw/
 *.exe
 *.dll
 *.out
