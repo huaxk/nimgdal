@@ -1,31 +1,31 @@
-import os, gdal
+import os, gdal, ogr
 
 const
   # filename = "c:/sources/data/region_shp"
   filename = currentSourcePath.parentDir()/"data/point.json"
 
-GDALAllRegister()
+allRegister()
 withGDALOpenEx(ds, filename, GDAL_OF_VECTOR, nil, nil, nil):
 # withOGROpen(ds, filename, false, nil):
   let
-    layer = ds.GetLayer(0)
+    layer = ds.getLayer(0)
     # layer = ds.GetLayerByName("CHN_adm0")
-  echo ds.GetLayerCount
-  echo layer.GetLayerDefn.GetName
+  echo ds.getLayerCount
+  echo layer.getLayerDefn.getName
 
-  for ft in layer:
-    for i, fld in layer.GetLayerDefn:
-      echo fld.GetNameRef
-      case fld.GetType
-      of OFTString: echo ft.GetFieldAsString(i)
-      of OFTReal: echo ft.GetFieldAsDouble(i)
-      of OFTInteger: echo ft.GetFieldAsInteger(i)
-      else: echo ft.GetFieldAsString(i)
+  # for ft in layer:
+  #   for i, fld in layer.getLayerDefn:
+  #     echo fld.getNameRef
+  #     case fld.getType
+  #     of OFTString: echo ft.getFieldAsString(i)
+  #     of OFTReal: echo ft.getFieldAsDouble(i)
+  #     of OFTInteger: echo ft.getFieldAsInteger(i)
+  #     else: echo ft.getFieldAsString(i)
 
-    echo ft.GetGeomFieldCount
-    let geometry = ft.GetGeomFieldRef(0)
-    if not isNil(geometry):
-      echo geometry.GetGeometryType.Flatten.GeometryTypeToName
+  #   echo ft.getGeomFieldCount
+  #   let geometry = ft.getGeomFieldRef(0)
+  #   if not isNil(geometry):
+  #     echo geometry.getGeometryType.flatten.geometryTypeToName
       # echo geometry
 
 # var hPt = OGRGCreateGeometry(wkbPoint);
