@@ -1,5 +1,6 @@
 nimcache/
 src/wrap/raw/
+tests/out/
 *.exe
 *.dll
 *.out

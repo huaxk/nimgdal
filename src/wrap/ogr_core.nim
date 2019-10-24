@@ -55,6 +55,17 @@ type
     MinZ*: cdouble
     MaxZ*: cdouble
 
+
+proc malloc*(a1: csize): pointer {.stdcall, importc: "OGRMalloc",
+                                  dynlib: dynlibogr_core.}
+proc calloc*(a1: csize; a2: csize): pointer {.stdcall, importc: "OGRCalloc",
+    dynlib: dynlibogr_core.}
+proc realloc*(a1: pointer; a2: csize): pointer {.stdcall, importc: "OGRRealloc",
+    dynlib: dynlibogr_core.}
+proc strdup*(a1: cstring): cstring {.stdcall, importc: "OGRStrdup",
+                                    dynlib: dynlibogr_core.}
+proc free*(a1: pointer) {.stdcall, importc: "OGRFree", dynlib: dynlibogr_core.}
+type
   OGRErr* = cint
   OGRBoolean* = cint
   OGRwkbGeometryType* {.size: sizeof(cint).} = enum
@@ -122,32 +133,32 @@ proc getCurve*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
 proc getLinear*(eType: OGRwkbGeometryType): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GT_GetLinear", dynlib: dynlibogr_core.}
 type
-  #INNER_C_STRUCT_temp-ogr_core.nim_213* {.bycopy.} = object
+  #INNER_C_STRUCT_temp-ogr_core.nim_218* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr cint
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_217* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_222* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr GIntBig
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_221* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_226* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: ptr cdouble
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_225* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_230* {.bycopy.} = object
 #    nCount*: cint
 #    paList*: cstringArray
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_229* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_234* {.bycopy.} = object
 #    nCount*: cint
 #    paData*: ptr GByte
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_233* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_238* {.bycopy.} = object
 #    nMarker1*: cint
 #    nMarker2*: cint
 #    nMarker3*: cint
 #
-#  INNER_C_STRUCT_temp-ogr_core.nim_238* {.bycopy.} = object
+#  INNER_C_STRUCT_temp-ogr_core.nim_243* {.bycopy.} = object
 #    Year*: GInt16
 #    Month*: GByte
 #    Day*: GByte
@@ -173,13 +184,13 @@ type
 #    Integer64*: GIntBig
 #    Real*: cdouble
 #    String*: cstring
-#    IntegerList*: INNER_C_STRUCT_temp-ogr_core.nim_213
-#    Integer64List*: INNER_C_STRUCT_temp-ogr_core.nim_217
-#    RealList*: INNER_C_STRUCT_temp-ogr_core.nim_221
-#    StringList*: INNER_C_STRUCT_temp-ogr_core.nim_225
-#    Binary*: INNER_C_STRUCT_temp-ogr_core.nim_229
-#    Set*: INNER_C_STRUCT_temp-ogr_core.nim_233
-#    Date*: INNER_C_STRUCT_temp-ogr_core.nim_238
+#    IntegerList*: INNER_C_STRUCT_temp-ogr_core.nim_218
+#    Integer64List*: INNER_C_STRUCT_temp-ogr_core.nim_222
+#    RealList*: INNER_C_STRUCT_temp-ogr_core.nim_226
+#    StringList*: INNER_C_STRUCT_temp-ogr_core.nim_230
+#    Binary*: INNER_C_STRUCT_temp-ogr_core.nim_234
+#    Set*: INNER_C_STRUCT_temp-ogr_core.nim_238
+#    Date*: INNER_C_STRUCT_temp-ogr_core.nim_243
 
 
 

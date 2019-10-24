@@ -4,11 +4,15 @@ import regex
 let baseDir = currentSourcePath.parentDir()
 echo baseDir
 let inputfiles = [
+  baseDir/"wrap/raw/gdal.nim",
   baseDir/"wrap/raw/ogr_api.nim",
   baseDir/"wrap/raw/ogr_core.nim",
   baseDir/"wrap/raw/cpl_port.nim",
   baseDir/"wrap/raw/cpl_progress.nim",
   baseDir/"wrap/raw/cpl_minixml.nim",
+  baseDir/"wrap/raw/cpl_error.nim",
+  baseDir/"wrap/raw/cpl_virtualmem.nim",
+  baseDir/"wrap/raw/cpl_vsi.nim",
 ]
 
 let replacePerfixes = [
@@ -25,6 +29,7 @@ let replacePerfixes = [
   "OGR_GT_",
   "OGR_",
   "OGR",
+  "GDALDataset",
   "GDAL",
   "CPL",
 ]

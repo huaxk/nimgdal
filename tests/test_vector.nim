@@ -1,7 +1,8 @@
-import os, unittest, strutils
-import ogr
+import os, unittest
+import gdal, ogr
 
 const dataDir = currentSourcePath.parentDir()/"data"
+const outDir = currentSourcePath.parentDir()/"out"
 const filename = dataDir/"point.json"
 
 suite "test ogr api":
@@ -11,7 +12,8 @@ suite "test ogr api":
     registerAll()
 
   test "OGR openEx":
-    let ds = open(filename, FALSE, nil)
+    # let ds = open(filename, FALSE, nil)
+    let ds = openEx(filename, GDAL_OF_VECTOR, nil, nil, nil)
     check:
       not isNil(ds)
       ds.getLayerCount == 1
@@ -58,12 +60,13 @@ suite "test ogr api":
     # check geometry.ExportToWkt(pwkt) == OGRERR_NONE
 
     feature.destroy
-    ds.destroy
+    # ds.destroy
+    ds.close
 
   test "write to OGR":
     let
-      pointSharpFile = dataDir/"point_out.shp"
-      driver = getDriverByName("ESRI Shapefile")
+      pointSharpFile = outDir/"point_out.shp"
+      driver = ogr.getDriverByName("ESRI Shapefile")
       ds = driver.createDataSource(pointSharpFile, nil)
       layer = ds.createLayer("point_out", nil, wkbPoint, nil)
       fieldDefn = create("Name", OFTString)
