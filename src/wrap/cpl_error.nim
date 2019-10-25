@@ -38,6 +38,12 @@ type
   CPLErrorNum* = cint
 
 
+proc error*(eErrClass: CPLErr; err_no: CPLErrorNum; fmt: cstring) {.varargs, stdcall,
+    importc: "CPLError", dynlib: dynlibcpl_error.}
+#[proc errorV*(a1: CPLErr; a2: CPLErrorNum; a3: cstring; a4: va_list) {.stdcall,
+    importc: "CPLErrorV", dynlib: dynlibcpl_error.}]#
+proc emergencyError*(a1: cstring) {.stdcall, importc: "CPLEmergencyError",
+                                    dynlib: dynlibcpl_error.}
 proc errorReset*() {.stdcall, importc: "CPLErrorReset", dynlib: dynlibcpl_error.}
 proc getLastErrorNo*(): CPLErrorNum {.stdcall, importc: "CPLGetLastErrorNo",
                                       dynlib: dynlibcpl_error.}
@@ -74,3 +80,7 @@ proc setCurrentErrorHandlerCatchDebug*(bCatchDebug: cint) {.stdcall,
     importc: "CPLSetCurrentErrorHandlerCatchDebug", dynlib: dynlibcpl_error.}
 proc popErrorHandler*() {.stdcall, importc: "CPLPopErrorHandler",
                            dynlib: dynlibcpl_error.}
+proc debug*(a1: cstring; a2: cstring) {.varargs, stdcall, importc: "CPLDebug",
+                                      dynlib: dynlibcpl_error.}
+#[proc _CPLAssert*(a1: cstring; a2: cstring; a3: cint) {.stdcall, importc: "_CPLAssert",
+    dynlib: dynlibcpl_error.}]#

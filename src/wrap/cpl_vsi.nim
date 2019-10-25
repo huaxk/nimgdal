@@ -20,6 +20,8 @@ const
   VSI_STAT_SIZE_FLAG* = 0x00000004
   VSI_STAT_SET_ERROR_FLAG* = 0x00000008
 
+proc VSIFOpen*(a1: cstring; a2: cstring): ptr FILE {.stdcall, importc: "VSIFOpen",
+    dynlib: dynlibcpl_vsi.}
 proc VSIFClose*(a1: ptr FILE): cint {.stdcall, importc: "VSIFClose",
                                  dynlib: dynlibcpl_vsi.}
 proc VSIFSeek*(a1: ptr FILE; a2: clong; a3: cint): cint {.stdcall, importc: "VSIFSeek",
@@ -36,6 +38,8 @@ proc VSIFGets*(a1: cstring; a2: cint; a3: ptr FILE): cstring {.stdcall,
     importc: "VSIFGets", dynlib: dynlibcpl_vsi.}
 proc VSIFPuts*(a1: cstring; a2: ptr FILE): cint {.stdcall, importc: "VSIFPuts",
     dynlib: dynlibcpl_vsi.}
+proc VSIFPrintf*(a1: ptr FILE; a2: cstring): cint {.varargs, stdcall,
+    importc: "VSIFPrintf", dynlib: dynlibcpl_vsi.}
 proc VSIFGetc*(a1: ptr FILE): cint {.stdcall, importc: "VSIFGetc", dynlib: dynlibcpl_vsi.}
 proc VSIFPutc*(a1: cint; a2: ptr FILE): cint {.stdcall, importc: "VSIFPutc",
                                         dynlib: dynlibcpl_vsi.}
@@ -79,6 +83,8 @@ proc VSIFTruncateL*(a1: ptr VSILFILE; a2: vsi_l_offset): cint {.stdcall,
     importc: "VSIFTruncateL", dynlib: dynlibcpl_vsi.}
 proc VSIFFlushL*(a1: ptr VSILFILE): cint {.stdcall, importc: "VSIFFlushL",
                                       dynlib: dynlibcpl_vsi.}
+proc VSIFPrintfL*(a1: ptr VSILFILE; a2: cstring): cint {.varargs, stdcall,
+    importc: "VSIFPrintfL", dynlib: dynlibcpl_vsi.}
 proc VSIFPutcL*(a1: cint; a2: ptr VSILFILE): cint {.stdcall, importc: "VSIFPutcL",
     dynlib: dynlibcpl_vsi.}
 type

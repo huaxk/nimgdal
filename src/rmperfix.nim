@@ -22,6 +22,7 @@ let replacePerfixes = [
   "OGR_G_",
   "OGR_FD_",
   "OGR_Fld_",
+  "OGR_GFld_",
   "OGR_Dr_",
   "OGR_SM_",
   "OGR_ST_",
@@ -35,9 +36,18 @@ let replacePerfixes = [
 ]
 
 let ignoreProcs = [
-  # "OGROpen",
-  # "OGRGetDriverCount",
-  ""
+  "OGROpen",
+  "OGROpenShared",
+  "OGRReleaseDataSource",
+  "OGRRegisterDriver",
+  "OGRDeregisterDriver",
+  "OGRGetDriverCount",
+  "OGRGetDriver",
+  "OGRGetDriverByName",
+  "OGRGetOpenDSCount",
+  "OGRGetOpenDS",
+  "OGRRegisterAll",
+  "OGRCleanupAll",
 ]
 
 proc rmperfixAndLowercase(m: RegexMatch, s: string): string =

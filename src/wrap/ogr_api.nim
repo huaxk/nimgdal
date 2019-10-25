@@ -352,29 +352,29 @@ proc getFieldSubTypeName*(a1: OGRFieldSubType): cstring {.stdcall,
     importc: "OGR_GetFieldSubTypeName", dynlib: dynlibogr_api.}
 proc areTypeSubTypeCompatible*(eType: OGRFieldType; eSubType: OGRFieldSubType): cint {.
     stdcall, importc: "OGR_AreTypeSubTypeCompatible", dynlib: dynlibogr_api.}
-proc gFld_Create*(a1: cstring; a2: OGRwkbGeometryType): OGRGeomFieldDefnH {.
+proc create*(a1: cstring; a2: OGRwkbGeometryType): OGRGeomFieldDefnH {.
     stdcall, importc: "OGR_GFld_Create", dynlib: dynlibogr_api.}
-proc gFld_Destroy*(a1: OGRGeomFieldDefnH) {.stdcall,
+proc destroy*(a1: OGRGeomFieldDefnH) {.stdcall,
     importc: "OGR_GFld_Destroy", dynlib: dynlibogr_api.}
-proc gFld_SetName*(a1: OGRGeomFieldDefnH; a2: cstring) {.stdcall,
+proc setName*(a1: OGRGeomFieldDefnH; a2: cstring) {.stdcall,
     importc: "OGR_GFld_SetName", dynlib: dynlibogr_api.}
-proc gFld_GetNameRef*(a1: OGRGeomFieldDefnH): cstring {.stdcall,
+proc getNameRef*(a1: OGRGeomFieldDefnH): cstring {.stdcall,
     importc: "OGR_GFld_GetNameRef", dynlib: dynlibogr_api.}
-proc gFld_GetType*(a1: OGRGeomFieldDefnH): OGRwkbGeometryType {.stdcall,
+proc getType*(a1: OGRGeomFieldDefnH): OGRwkbGeometryType {.stdcall,
     importc: "OGR_GFld_GetType", dynlib: dynlibogr_api.}
-proc gFld_SetType*(a1: OGRGeomFieldDefnH; a2: OGRwkbGeometryType) {.stdcall,
+proc setType*(a1: OGRGeomFieldDefnH; a2: OGRwkbGeometryType) {.stdcall,
     importc: "OGR_GFld_SetType", dynlib: dynlibogr_api.}
-proc gFld_GetSpatialRef*(a1: OGRGeomFieldDefnH): OGRSpatialReferenceH {.stdcall,
+proc getSpatialRef*(a1: OGRGeomFieldDefnH): OGRSpatialReferenceH {.stdcall,
     importc: "OGR_GFld_GetSpatialRef", dynlib: dynlibogr_api.}
-proc gFld_SetSpatialRef*(a1: OGRGeomFieldDefnH; hSRS: OGRSpatialReferenceH) {.
+proc setSpatialRef*(a1: OGRGeomFieldDefnH; hSRS: OGRSpatialReferenceH) {.
     stdcall, importc: "OGR_GFld_SetSpatialRef", dynlib: dynlibogr_api.}
-proc gFld_IsNullable*(hDefn: OGRGeomFieldDefnH): cint {.stdcall,
+proc isNullable*(hDefn: OGRGeomFieldDefnH): cint {.stdcall,
     importc: "OGR_GFld_IsNullable", dynlib: dynlibogr_api.}
-proc gFld_SetNullable*(hDefn: OGRGeomFieldDefnH; a2: cint) {.stdcall,
+proc setNullable*(hDefn: OGRGeomFieldDefnH; a2: cint) {.stdcall,
     importc: "OGR_GFld_SetNullable", dynlib: dynlibogr_api.}
-proc gFld_IsIgnored*(hDefn: OGRGeomFieldDefnH): cint {.stdcall,
+proc isIgnored*(hDefn: OGRGeomFieldDefnH): cint {.stdcall,
     importc: "OGR_GFld_IsIgnored", dynlib: dynlibogr_api.}
-proc gFld_SetIgnored*(hDefn: OGRGeomFieldDefnH; a2: cint) {.stdcall,
+proc setIgnored*(hDefn: OGRGeomFieldDefnH; a2: cint) {.stdcall,
     importc: "OGR_GFld_SetIgnored", dynlib: dynlibogr_api.}
 proc create*(a1: cstring): OGRFeatureDefnH {.stdcall,
     importc: "OGR_FD_Create", dynlib: dynlibogr_api.}
@@ -743,28 +743,28 @@ proc copyDataSource*(a1: OGRSFDriverH; a2: OGRDataSourceH; a3: cstring;
     importc: "OGR_Dr_CopyDataSource", dynlib: dynlibogr_api.}
 proc deleteDataSource*(a1: OGRSFDriverH; a2: cstring): OGRErr {.stdcall,
     importc: "OGR_Dr_DeleteDataSource", dynlib: dynlibogr_api.}
-proc open*(a1: cstring; a2: cint; a3: ptr OGRSFDriverH): OGRDataSourceH {.stdcall,
+proc ogrOpen*(a1: cstring; a2: cint; a3: ptr OGRSFDriverH): OGRDataSourceH {.stdcall,
     importc: "OGROpen", dynlib: dynlibogr_api.}
-proc openShared*(a1: cstring; a2: cint; a3: ptr OGRSFDriverH): OGRDataSourceH {.
+proc ogrOpenShared*(a1: cstring; a2: cint; a3: ptr OGRSFDriverH): OGRDataSourceH {.
     stdcall, importc: "OGROpenShared", dynlib: dynlibogr_api.}
-proc releaseDataSource*(a1: OGRDataSourceH): OGRErr {.stdcall,
+proc ogrReleaseDataSource*(a1: OGRDataSourceH): OGRErr {.stdcall,
     importc: "OGRReleaseDataSource", dynlib: dynlibogr_api.}
-proc registerDriver*(a1: OGRSFDriverH) {.stdcall, importc: "OGRRegisterDriver",
+proc ogrRegisterDriver*(a1: OGRSFDriverH) {.stdcall, importc: "OGRRegisterDriver",
     dynlib: dynlibogr_api.}
-proc deregisterDriver*(a1: OGRSFDriverH) {.stdcall,
+proc ogrDeregisterDriver*(a1: OGRSFDriverH) {.stdcall,
     importc: "OGRDeregisterDriver", dynlib: dynlibogr_api.}
-proc getDriverCount*(): cint {.stdcall, importc: "OGRGetDriverCount",
+proc ogrGetDriverCount*(): cint {.stdcall, importc: "OGRGetDriverCount",
                                dynlib: dynlibogr_api.}
-proc getDriver*(a1: cint): OGRSFDriverH {.stdcall, importc: "OGRGetDriver",
+proc ogrGetDriver*(a1: cint): OGRSFDriverH {.stdcall, importc: "OGRGetDriver",
     dynlib: dynlibogr_api.}
-proc getDriverByName*(a1: cstring): OGRSFDriverH {.stdcall,
+proc ogrGetDriverByName*(a1: cstring): OGRSFDriverH {.stdcall,
     importc: "OGRGetDriverByName", dynlib: dynlibogr_api.}
-proc getOpenDSCount*(): cint {.stdcall, importc: "OGRGetOpenDSCount",
+proc ogrGetOpenDSCount*(): cint {.stdcall, importc: "OGRGetOpenDSCount",
                                dynlib: dynlibogr_api.}
-proc getOpenDS*(iDS: cint): OGRDataSourceH {.stdcall, importc: "OGRGetOpenDS",
+proc ogrGetOpenDS*(iDS: cint): OGRDataSourceH {.stdcall, importc: "OGRGetOpenDS",
     dynlib: dynlibogr_api.}
-proc registerAll*() {.stdcall, importc: "OGRRegisterAll", dynlib: dynlibogr_api.}
-proc cleanupAll*() {.stdcall, importc: "OGRCleanupAll", dynlib: dynlibogr_api.}
+proc ogrRegisterAll*() {.stdcall, importc: "OGRRegisterAll", dynlib: dynlibogr_api.}
+proc ogrCleanupAll*() {.stdcall, importc: "OGRCleanupAll", dynlib: dynlibogr_api.}
 type
   OGRStyleMgr = object
   OGRStyleMgrH* = ptr OGRStyleMgr

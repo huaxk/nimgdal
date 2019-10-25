@@ -7,3 +7,6 @@ tests/out/
 *.zip
 *.tar
 *.xz
+src/rmperfix
+tests/test_vector
+tests/test_wrap_vector

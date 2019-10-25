@@ -23,6 +23,7 @@ const
   HAS_CPL_INLINE* = 1
   NULL* = 0
   M_PI* = 3.141592653589793
+#  CPL_FINAL* = f
 #  FALSE* = f
   FALSE* = 0
   TRUE* = 1
