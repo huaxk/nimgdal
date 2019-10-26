@@ -18,9 +18,19 @@ suite "test gdal vector":
         layerByName = ds[layerName]
       check layer == layerByName
 
+
+  test "withOgrOpen":
+    withOgrOpen(ds, filename, false, nil):
+      let
+        layer = ds[0]
+        versionNum = parseInt($versionInfo("VERSION_NUM"))
+        layerName = if versionNum >= 2020000: "point" else: "OGRGeoJSON"
+        layerByName = ds[layerName]
       check:
+        layer == layerByName
+
         layer.featureCount == 4
-        layer.fieldCount == 2
+        layer.layerDefn.fieldCount == 2
 
       let
         field0 = layer.layerDefn[0]
@@ -32,15 +42,18 @@ suite "test gdal vector":
         field1.name == "pointname"
 
       let ft = layer[0]
+      defer: ft.destroy
       check:
-        ft.getFieldAsDouble(0) == 2.0
-        ft.getFieldAsString(1) == "point-a"
+        ft[0].asDouble == 2.0
+        ft[1].asString == "point-a"
 
-  test "withOgrOpen":
-    withOgrOpen(ds, filename, false, nil):
-      let
-        layer = ds[0]
-        versionNum = parseInt($versionInfo("VERSION_NUM"))
-        layerName = if versionNum >= 2020000: "point" else: "OGRGeoJSON"
-        layerByName = ds[layerName]
-      check layer == layerByName
+      let geom = ft.geometry
+      check:
+        geom.name == "POINT"
+        geom.type == wkbPoint
+        layer.layerDefn.geomFieldCount == 1
+        geom.getX(0) == 100.0
+        geom.getY(0) == 0.0
+
+        geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.0, 0.0 ] }"""
+        geom.exportToWkt == "POINT (100 0)"

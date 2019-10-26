@@ -35,8 +35,6 @@ suite "test ogr api":
       layerByName = ds.getLayerByName(layerName)
     check layer == layerByName
 
-    layer.resetReading
-
     let featureDefn = layer.getLayerDefn
     check featureDefn.getFieldCount == 2
 
@@ -49,6 +47,7 @@ suite "test ogr api":
       fieldDefn1.getType == OFTString
       fieldDefn1.getNameRef == "pointname"
 
+    layer.resetReading
     var feature = layer.getNextFeature
     check:
       not isNil(feature)
