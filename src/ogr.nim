@@ -123,8 +123,8 @@ iterator items*(ds: OGRDataSourceH): OGRLayerH =
     yield ds.getLayer(i)
 
 # OGRLayerH
-proc `[]`*(layer: OGRLayerH, idx: int): OGRFeatureH {.inline.} =
-  result = layer.getFeature(idx)
+proc `[]`*(layer: OGRLayerH, fid: int): OGRFeatureH {.inline.} =
+  result = layer.getFeature(fid)
 
 proc featureCount*(layer: OGRLayerH): int64 {.inline.} =
   result = layer.getFeatureCount(TRUE)
@@ -153,20 +153,32 @@ iterator items*(layer: OGRLayerH): OGRFeatureH =
 proc `[]`*(ft: OGRFeatureH, idx: int): Field =
   result = Field(feature: ft, idx: idx)
 
+proc `[]`*(ft: OGRFeatureH, fieldName: string): Field {.inline.} =
+  result = ft[ft.getFieldIndex(fieldName)]
+
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: int32) {.inline.} =
   ft.setFieldInteger(idx.cint, val)
+
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: int32) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: int64) {.inline.} =
   ft.setFieldInteger64(idx.cint, val)
 
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: int64) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: float64) {.inline.} =
   ft.setFieldDouble(idx.cint, val)
 
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: float64) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: string) {.inline.} =
   ft.setFieldString(idx.cint, val)
 
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: string) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[int32]) {.inline.} =
   let
@@ -174,11 +186,17 @@ proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[int32]) {.inline.} =
     value = cast[ptr cint](val)
   ft.setFieldIntegerList(idx.cint, nCount, value)
 
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: openArray[int32]) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
+
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[int64]) {.inline.} =
   let
     nCount = val.len.cint
     value = cast[ptr GIntBig](val)
   ft.setFieldInteger64List(idx.cint, nCount, value)
+
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: openArray[int64]) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[float64]) {.inline.} =
   let
@@ -186,8 +204,14 @@ proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[float64]) {.inline.} =
     value = cast[ptr cdouble](val)
   ft.setFieldDoubleList(idx.cint, nCount, value)
 
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: openArray[float64]) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
+
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: cstringArray) {.inline.} =
   ft.setFieldStringList(idx.cint, val)
+
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: cstringArray) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[char]) {.inline.} =
   let
@@ -195,24 +219,30 @@ proc `[]=`*(ft: OGRFeatureH, idx: int, val: openArray[char]) {.inline.} =
     value = cast[ptr GByte](val)
   ft.setFieldBinary(idx.cint, nBytes, value)
 
-proc `[]=`*(ft: OGRFeatureH, idx: int, dt: DateTime) {.inline.} =
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: openArray[char]) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
+
+proc `[]=`*(ft: OGRFeatureH, idx: int, val: DateTime) {.inline.} =
   let
-    nYear = dt.year.cint
-    nMonth = dt.month.cint
-    nDay = dt.monthday.cint
-    nHour = dt.hour.cint
-    nMinute = dt.minute.cint
-    nNanosecond = dt.nanosecond
-    zone = dt.timezone
+    nYear = val.year.cint
+    nMonth = val.month.cint
+    nDay = val.monthday.cint
+    nHour = val.hour.cint
+    nMinute = val.minute.cint
+    nNanosecond = val.nanosecond
+    zone = val.timezone
     nTZFlag = if zone == local(): 1.cint
       elif zone == utc(): 100.cint
       else: 0.cint
   if nNanosecond == 0:
-    let nSecond = dt.second.cint
+    let nSecond = val.second.cint
     ft.setFieldDateTime(idx.cint, nYear, nMonth, nDay, nHour, nMinute, nSecond, nTZFlag)
   else:
-    let nSecondwithnano = (dt.second.float + nNanosecond / 1000000).cfloat
+    let nSecondwithnano = (val.second.float + nNanosecond / 1000000).cfloat
     ft.setFieldDateTimeEx(idx.cint, nYear, nMonth, nDay, nHour, nMinute, nSecondwithnano, nTZFlag)
+
+proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: DateTime) {.inline.} =
+  ft[ft.getFieldIndex(fieldName)] = val
 
 proc geometry*(ft: OGRFeatureH): OGRGeometryH {.inline.} =
   result = ft.getGeometryRef
@@ -259,7 +289,7 @@ proc exportToJson*(geom: OGRGeometryH): string =
 
 proc exportToWkt*(geom: OGRGeometryH): string =
   var wktArray = allocCStringArray([])
-  defer: deallocCStringArray(wktArray)
+  # defer: deallocCStringArray(wktArray)
   let error = geom.exportToWkt(wktArray)
   if error == OGRERR_NONE:
     let wkt = wktArray.cstringArrayToSeq
@@ -281,3 +311,12 @@ template withOgrOpen*(hDS: untyped,
     body
   finally:
     hDS.destroy
+
+template withFeature*(feature: untyped, layer: OGRLayerH, fid: int, body: untyped) =
+  var feature = layer.getfeature(fid)
+  if isNil(feature):
+    quit("layer has not feature with FID: " & $fid)
+  try:
+    body
+  finally:
+    feature.destroy

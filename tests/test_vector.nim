@@ -57,3 +57,20 @@ suite "test gdal vector":
 
         geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.0, 0.0 ] }"""
         geom.exportToWkt == "POINT (100 0)"
+
+      withFeature(feature, layer, 1):
+        check:
+          feature["FID"].asDouble == 3.0
+          feature["pointname"].asString == "point-b"
+
+        let geom = feature.geometry
+        check:
+          geom.name == "POINT"
+          geom.type == wkbPoint
+          layer.layerDefn.geomFieldCount == 1
+          geom.getX(0) == 100.2785
+          geom.getY(0) == 0.0893
+
+          geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
+          geom.exportToWkt == "POINT (100.2785 0.0893)"        
+        
