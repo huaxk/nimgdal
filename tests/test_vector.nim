@@ -74,3 +74,13 @@ suite "test gdal vector":
           geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
           geom.exportToWkt == "POINT (100.2785 0.0893)"        
         
+  test "write to OGR":
+    let
+      pointSharpFile = outDir/"point_out.shp"
+      driver = ogrGetDriverByName("ESRI Shapefile")
+      ds = driver.createDataSource(pointSharpFile, nil)
+      layer = ds.createLayer("point_out", nil, wkbPoint, nil)
+      fieldDefn = newOGRFieldDefnH("Name", OFTString)
+    defer: fieldDefn.destroy
+    fieldDefn.width = 32
+    check layer.createField(fieldDefn, TRUE) == OGRERR_NONE

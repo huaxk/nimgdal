@@ -262,20 +262,35 @@ proc geomFieldCount*(ftDefn: OGRFeatureDefnH): int {.inline.} =
   result = ftDefn.getGeomFieldCount
 
 # OGRFieldDefnH
-proc name*(fldDefn: OGRFieldDefnH): string =
+proc newOGRFieldDefnH*(name: string, fieldType: OGRFieldType): OGRFieldDefnH {.inline.} =
+  result = create(name, fieldType)
+
+proc name*(fldDefn: OGRFieldDefnH): string {.inline.} =
   result = $fldDefn.getNameRef
+
+proc `name=`*(fldDefn: OGRFieldDefnH, name: string) {.inline.} =
+  fldDefn.setName(name)
 
 proc type*(fldDefn: OGRFieldDefnH): OGRFieldType =
   result = fldDefn.getType
 
-proc typename*(fldDefn: OGRFieldDefnH): string =
+proc `type=`*(fldDefn: OGRFieldDefnH, typ: OGRFieldType) {.inline.} =
+  fldDefn.setType(typ)
+
+proc typename*(fldDefn: OGRFieldDefnH): string {.inline.} =
   result = $fldDefn.getType.getFieldTypeName
 
-proc precision*(fldDefn: OGRFieldDefnH): int =
+proc precision*(fldDefn: OGRFieldDefnH): int {.inline.} =
   result = fldDefn.getPrecision
 
-proc width*(fldDefn: OGRFieldDefnH): int =
+proc `precision=`*(fldDefn: OGRFieldDefnH, precision: int) {.inline.} =
+  fldDefn.setPrecision(precision.cint)
+
+proc width*(fldDefn: OGRFieldDefnH): int {.inline.} =
   result = fldDefn.getWidth
+
+proc `width=`*(fldDefn: OGRFieldDefnH, width: int) {.inline.} =
+  fldDefn.setWidth(width.cint)
 
 # OGRGeometryH
 proc name*(geom: OGRGeometryH): string {.inline.} =
