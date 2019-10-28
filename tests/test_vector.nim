@@ -42,7 +42,7 @@ suite "test gdal vector":
         field1.name == "pointname"
 
       let ft = layer[0]
-      defer: ft.destroy
+      defer: ft.destroy # need to destroy feature by self
       check:
         ft[0].asDouble == 2.0
         ft[1].asString == "point-a"
@@ -58,12 +58,12 @@ suite "test gdal vector":
         geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.0, 0.0 ] }"""
         geom.exportToWkt == "POINT (100 0)"
 
-      withFeature(feature, layer, 1):
+      layer.withFeature(ft1, 1):
         check:
-          feature["FID"].asDouble == 3.0
-          feature["pointname"].asString == "point-b"
+          ft1["FID"].asDouble == 3.0
+          ft1["pointname"].asString == "point-b"
 
-        let geom = feature.geometry
+        let geom = ft1.geometry
         check:
           geom.name == "POINT"
           geom.type == wkbPoint
@@ -77,10 +77,35 @@ suite "test gdal vector":
   test "write to OGR":
     let
       pointSharpFile = outDir/"point_out.shp"
-      driver = ogrGetDriverByName("ESRI Shapefile")
-      ds = driver.createDataSource(pointSharpFile, nil)
-      layer = ds.createLayer("point_out", nil, wkbPoint, nil)
-      fieldDefn = newOGRFieldDefnH("Name", OFTString)
-    defer: fieldDefn.destroy
-    fieldDefn.width = 32
-    check layer.createField(fieldDefn, TRUE) == OGRERR_NONE
+      driverName = "ESRI Shapefile"
+      driver = ogrGetDriverByName(driverName)
+    
+    check not isNil(driver)
+
+    driver.withCreateDataSource(ds, pointSharpFile):
+      let layer = ds.createLayer("point_out", nil, wkbPoint, nil)
+
+      # layer.createField("Name", OFTString, 32)
+      layer.withCreateField(fd, "Name", OFTString):
+        fd.width = 32
+      check:
+        layer.layerDefn[0].name == "Name"
+        layer.layerDefn["Name"].type == OFTString
+        layer.layerDefn["Name"].width == 32
+        layer.layerDefn["Name"].precision == 0
+    
+      layer.withCreateFeature(ft):
+        ft["Name"] = "myname"
+        ft.withSetGeometryDirectly(pt, wkbPoint):
+          pt.setPoint_2D(0, 100.123, 0.123)
+      
+      check:
+        layer[0]["Name"].asString == "myname"
+        layer[0].geometry.name == "POINT"
+        layer[0].geometry.type == wkbPoint
+        layer[0].geometry.getX(0) == 100.123
+        layer[0].geometry.getY(0) == 0.123
+
+        ds.getFileList.cstringArrayToSeq == @[outDir/"point_out.shp",
+                                              outDir/"point_out.shx",
+                                              outDir/"point_out.dbf"]

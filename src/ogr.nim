@@ -111,6 +111,43 @@ proc asDateTimeEx*(field: Field): DateTime =
   else:
     raiseAssert("fail to asDateTime")
 
+# OGRFieldDefnH
+# proc newOGRFieldDefnH*(name: string, fieldType: OGRFieldType): OGRFieldDefnH {.inline.} =
+#   result = create(name, fieldType)
+
+proc name*(fldDefn: OGRFieldDefnH): string {.inline.} =
+  result = $fldDefn.getNameRef
+
+proc `name=`*(fldDefn: OGRFieldDefnH, name: string) {.inline.} =
+  fldDefn.setName(name)
+
+proc type*(fldDefn: OGRFieldDefnH): OGRFieldType =
+  result = fldDefn.getType
+
+proc `type=`*(fldDefn: OGRFieldDefnH, typ: OGRFieldType) {.inline.} =
+  fldDefn.setType(typ)
+
+proc typename*(fldDefn: OGRFieldDefnH): string {.inline.} =
+  result = $fldDefn.getType.getFieldTypeName
+
+proc precision*(fldDefn: OGRFieldDefnH): int {.inline.} =
+  result = fldDefn.getPrecision
+
+proc `precision=`*(fldDefn: OGRFieldDefnH, precision: int) {.inline.} =
+  fldDefn.setPrecision(precision.cint)
+
+proc width*(fldDefn: OGRFieldDefnH): int {.inline.} =
+  result = fldDefn.getWidth
+
+proc `width=`*(fldDefn: OGRFieldDefnH, width: int) {.inline.} =
+  fldDefn.setWidth(width.cint)
+
+proc justify*(fldDefn: OGRFieldDefnH): OGRJustification {.inline.} =
+  result = fldDefn.getJustify
+
+proc `justify=`*(fldDefn: OGRFieldDefnH, justify: OGRJustification) {.inline.} =
+  fldDefn.setJustify(justify)
+
 # OGRDataSourceH
 proc `[]`*(ds: OGRDataSourceH, idx: int): OGRLayerH {.inline.} =
   result = ds.getLayer(idx.cint)
@@ -148,6 +185,29 @@ iterator items*(layer: OGRLayerH): OGRFeatureH =
       yield ft
     finally:
       ft.destroy
+
+proc createField*(layer: OGRLayerH, name: string, typ: OGRFieldType,
+                  width = 0, precision = 0, justify = OJUndefined) =
+  let fieldDefn = create(name, typ)
+  if width != 0: fieldDefn.width = width
+  if width != 0: fieldDefn.precision = precision
+  fieldDefn.justify = justify
+
+  let error = layer.createField(fieldDefn, TRUE)
+  if error == OGRERR_NONE:
+    fieldDefn.destroy
+  else:
+    raiseAssert("Fail to create field")
+
+proc createField*(layer: OGRLayerH,
+                fdDefns:openArray[tuple[name: string,
+                                        typ: OGRFieldType,
+                                        width: int,
+                                        precision: int,
+                                        justify: OGRJustification]]) =
+  for fdDefn in fdDefns:
+    layer.createField(fdDefn.name, fdDefn.typ,
+                      fdDefn.width, fdDefn.precision, fdDefn.justify)
 
 # OGRFeatureH
 proc `[]`*(ft: OGRFeatureH, idx: int): Field =
@@ -254,43 +314,15 @@ proc fieldCount*(ftDefn: OGRFeatureDefnH): int {.inline.} =
 proc `[]`*(ftDefn: OGRFeatureDefnH, idx: int): OGRFieldDefnH {.inline.} =
   result = ftDefn.getFieldDefn(idx.cint)
 
+proc `[]`*(ftDefn: OGRFeatureDefnH, name: string): OGRFieldDefnH {.inline.} =
+  result = ftDefn.getFieldDefn(ftDefn.getFieldIndex(name))
+
 iterator pairs*(ftDefn: OGRFeatureDefnH): tuple[key: int32, val: OGRFieldDefnH] =
   for i in 0 ..< ftDefn.getFieldCount:
     yield (i, ftDefn.getFieldDefn(i))
 
 proc geomFieldCount*(ftDefn: OGRFeatureDefnH): int {.inline.} =
   result = ftDefn.getGeomFieldCount
-
-# OGRFieldDefnH
-proc newOGRFieldDefnH*(name: string, fieldType: OGRFieldType): OGRFieldDefnH {.inline.} =
-  result = create(name, fieldType)
-
-proc name*(fldDefn: OGRFieldDefnH): string {.inline.} =
-  result = $fldDefn.getNameRef
-
-proc `name=`*(fldDefn: OGRFieldDefnH, name: string) {.inline.} =
-  fldDefn.setName(name)
-
-proc type*(fldDefn: OGRFieldDefnH): OGRFieldType =
-  result = fldDefn.getType
-
-proc `type=`*(fldDefn: OGRFieldDefnH, typ: OGRFieldType) {.inline.} =
-  fldDefn.setType(typ)
-
-proc typename*(fldDefn: OGRFieldDefnH): string {.inline.} =
-  result = $fldDefn.getType.getFieldTypeName
-
-proc precision*(fldDefn: OGRFieldDefnH): int {.inline.} =
-  result = fldDefn.getPrecision
-
-proc `precision=`*(fldDefn: OGRFieldDefnH, precision: int) {.inline.} =
-  fldDefn.setPrecision(precision.cint)
-
-proc width*(fldDefn: OGRFieldDefnH): int {.inline.} =
-  result = fldDefn.getWidth
-
-proc `width=`*(fldDefn: OGRFieldDefnH, width: int) {.inline.} =
-  fldDefn.setWidth(width.cint)
 
 # OGRGeometryH
 proc name*(geom: OGRGeometryH): string {.inline.} =
@@ -327,7 +359,7 @@ template withOgrOpen*(hDS: untyped,
   finally:
     hDS.destroy
 
-template withFeature*(feature: untyped, layer: OGRLayerH, fid: int, body: untyped) =
+template withFeature*(layer: OGRLayerH, feature: untyped, fid: int, body: untyped) =
   var feature = layer.getfeature(fid)
   if isNil(feature):
     quit("layer has not feature with FID: " & $fid)
@@ -335,3 +367,43 @@ template withFeature*(feature: untyped, layer: OGRLayerH, fid: int, body: untype
     body
   finally:
     feature.destroy
+
+template withCreateDataSource*(driver: OGRSFDriverH, ds: untyped,
+                              fn: string, body: untyped) =
+  var ds = driver.createDataSource(fn, nil)
+  defer: ds.close
+  body
+
+template withCreateField*(layer: OGRLayerH, fieldDefn: untyped, 
+                      name: string, typ: OGRFieldType, body: untyped) =
+  var fieldDefn = create(name, typ)
+  defer: fieldDefn.destroy
+  body
+  let error = layer.createField(fieldDefn, TRUE)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to create field")  
+
+template withCreateFeature*(layer: OGRLayerH, feature: untyped, body: untyped) =
+  var feature = layer.getLayerDefn.create()
+  defer: feature.destroy
+  body
+  let error = layer.createFeature(feature)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to create feature")
+
+template withSetGeometry*(feature: OGRFeatureH, geom: untyped,
+                          typ: OGRwkbGeometryType, body: untyped) =
+  var geom = createGeometry(typ)
+  defer: geom.destroyGeometry
+  body
+  let error = feature.setGeometry(geom)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to set geometry")
+
+template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
+                          typ: OGRwkbGeometryType, body: untyped) =
+  var geom = createGeometry(typ)
+  body
+  let error = feature.setGeometryDirectly(geom)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to set geometry")
