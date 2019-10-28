@@ -8,13 +8,19 @@ type
     idx: int
 
 proc asInteger*(field: Field): int32 =
-  result = field.feature.getFieldAsInteger(field.idx.cint)
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTInteger
+  result = field.feature.getFieldAsInteger(idx)
 
 proc asInteger64*(field: Field): int64 =
-  result = field.feature.getFieldAsInteger64(field.idx.cint).int
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTInteger64
+  result = field.feature.getFieldAsInteger64(idx).int
 
 proc asDouble*(field: Field): float64 =
-  result = field.feature.getFieldAsDouble(field.idx.cint)
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTReal
+  result = field.feature.getFieldAsDouble(idx)
 
 proc asString*(field: Field): string =
   result = $field.feature.getFieldAsString(field.idx.cint)
@@ -23,8 +29,10 @@ proc `$`*(field: Field): string =
   result = field.asString
 
 proc asIntegerList*(field: Field): seq[cint] =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTIntegerList
   var pnCount = 0.cint
-  let pcintValue = field.feature.getFieldAsIntegerList(field.idx.cint, pnCount.addr)
+  let pcintValue = field.feature.getFieldAsIntegerList(idx, pnCount.addr)
   echo pnCount
   if pnCount == 0:
     result = @[]
@@ -32,8 +40,10 @@ proc asIntegerList*(field: Field): seq[cint] =
     result = @(toOpenArray(cast[ptr UncheckedArray[cint]](pcintValue), 0, pnCount-1))
 
 proc asInteger64List*(field: Field): seq[int] =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTInteger64List
   var pnCount = 0.cint
-  let pcintValue = field.feature.getFieldAsInteger64List(field.idx.cint, pnCount.addr)
+  let pcintValue = field.feature.getFieldAsInteger64List(idx, pnCount.addr)
   echo pnCount
   if pnCount == 0:
     result = @[]
@@ -41,8 +51,10 @@ proc asInteger64List*(field: Field): seq[int] =
     result = @(toOpenArray(cast[ptr UncheckedArray[int]](pcintValue), 0, pnCount-1))
 
 proc asDoubleList*(field: Field): seq[float64] =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTRealList
   var pnCount = 0.cint
-  let doubleList = field.feature.getFieldAsDoubleList(field.idx.cint, pnCount.addr)
+  let doubleList = field.feature.getFieldAsDoubleList(idx, pnCount.addr)
   if pnCount == 0:
     result = @[]
   else:
@@ -50,13 +62,17 @@ proc asDoubleList*(field: Field): seq[float64] =
     result = @(toOpenArray(ua, 0, pnCount-1))
 
 proc asStringList*(field: Field): seq[string] =
-  let value = field.feature.getFieldAsStringList(field.idx.cint)
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTStringList
+  let value = field.feature.getFieldAsStringList(idx)
   result = value.cstringArrayToSeq
   # deallocCStringArray(value)
 
 proc asBinary*(field: Field): seq[char] =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType == OFTBinary
   var pnBytes: cint
-  let cucharList = field.feature.getFieldAsBinary(field.idx.cint, pnBytes.addr)  
+  let cucharList = field.feature.getFieldAsBinary(idx, pnBytes.addr)  
   if pnBytes == 0:
     result = @[]
   else:
@@ -64,8 +80,10 @@ proc asBinary*(field: Field): seq[char] =
     result = @(toOpenArray(ua, 0, pnBytes-1))
 
 proc asDateTime*(field: Field): DateTime =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType in [OFTDateTime, OFTDate, OFTTime]
   var pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag: cint
-  let value = field.feature.getFieldAsDateTime(field.idx.cint,
+  let value = field.feature.getFieldAsDateTime(idx,
                                               pnYear.addr,
                                               pnMonth.addr,
                                               pnDay.addr,
@@ -86,9 +104,11 @@ proc asDateTime*(field: Field): DateTime =
     raiseAssert("fail to asDateTime")
 
 proc asDateTimeEx*(field: Field): DateTime =
+  let idx = field.idx.cint
+  doAssert field.feature.getFieldDefnRef(idx).getType in [OFTDateTime, OFTDate, OFTTime]
   var pnYear, pnMonth, pnDay, pnHour, pnMinute, pnTZFlag: cint
   var pnSecond: cfloat
-  let value = field.feature.getFieldAsDateTimeEx(field.idx.cint,
+  let value = field.feature.getFieldAsDateTimeEx(idx,
                                               pnYear.addr,
                                               pnMonth.addr,
                                               pnDay.addr,
@@ -306,6 +326,9 @@ proc `[]=`*(ft: OGRFeatureH, fieldName: string, val: DateTime) {.inline.} =
 
 proc geometry*(ft: OGRFeatureH): OGRGeometryH {.inline.} =
   result = ft.getGeometryRef
+
+proc fieldDefn*(ft: OGRFeatureH, idx: int): OGRFieldDefnH {.inline.} =
+  result = ft.getFieldDefnRef(idx.cint)
 
 # OGRFeatureDefnH
 proc fieldCount*(ftDefn: OGRFeatureDefnH): int {.inline.} =
