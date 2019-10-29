@@ -1,6 +1,6 @@
 import times, math
 import wrap/ogr_api
-export ogr_api except exportToJson
+export ogr_api except exportToJson, exportToWkb
 
 type
   Field = object
@@ -368,8 +368,16 @@ proc exportToWkt*(geom: OGRGeometryH): string =
       if i < wkt.len-1:
         result &= "\n"
 
+proc exportToWkb*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string =
+  let size = geom.wkbSize
+  result = newString(size)
+  var wkb = cast[ptr cuchar](result.cstring)
+  let error = geom.exportToWkb(eOrder, wkb)
+  if error != OGRERR_NONE:
+    result = ""
+
 # template
-template withOgrOpen*(hDS: untyped,
+template withDataSource*(hDS: untyped,
                       pszName: string,
                       bUpdate: bool,
                       pahDriverList: OGRSFDriverH,

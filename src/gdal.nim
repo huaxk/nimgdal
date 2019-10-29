@@ -12,7 +12,21 @@ iterator items*(ds: GDALDatasetH): OGRLayerH =
   for i in 0 ..< ds.getLayerCount:
     yield ds.getLayer(i)
   
-template withOpenEx*(hDS: untyped,
+template withCreateDataset*(driver: GDALDriverH,
+                          ds: untyped,
+                          pszFilename: cstring,
+                          nXSize: cint,
+                          nYSize: cint,
+                          nBands: cint,
+                          eType: GDALDataType,
+                          papszOptions: cstringArray,
+                          body: untyped) =
+  var ds = driver.create(pszFilename, nXSize, nYSize,
+                        nBands, eType, papszOptions)
+  defer: ds.close()
+  body
+
+template withDatasetEx*(hDS: untyped,
                   pszFilename: cstring,
                   nOpenFlags: int32,
                   papszAllowedDrivers: cstring,
@@ -27,6 +41,13 @@ template withOpenEx*(hDS: untyped,
     body
   finally:
     hDS.close
+
+template withDataset*(hDS: untyped,
+                  pszFilename: cstring,
+                  nOpenFlags: int32,
+                  body: untyped) =
+  withDatasetEx(hDS, pszFilename, nOpenFlags, nil, nil, nil):
+    body
 
 # template withGDALOpen*(hDS: untyped,
 #                   pszFilename: cstring,

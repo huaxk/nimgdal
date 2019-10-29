@@ -5,12 +5,12 @@ const dataDir = currentSourcePath.parentDir()/"data"
 const outDir = currentSourcePath.parentDir()/"out"
 const filename = dataDir/"point.json"
 
-suite "test gdal vector":
+suite "test vector api":
   setup:
     allRegister()
-  
-  test "withOpenEx":
-    withOpenEx(ds, filename, GDAL_OF_VECTOR, nil, nil, nil):
+
+  test "Reading from OGR DataSource":
+    withDataSource(ds, filename, false, nil):
       let
         layer = ds[0]
         versionNum = parseInt($versionInfo("VERSION_NUM"))
@@ -18,9 +18,8 @@ suite "test gdal vector":
         layerByName = ds[layerName]
       check layer == layerByName
 
-
-  test "withOgrOpen":
-    withOgrOpen(ds, filename, false, nil):
+  test "Reading from GDAL Dataset":
+    withDataset(ds, filename, GDAL_OF_VECTOR):
       let
         layer = ds[0]
         versionNum = parseInt($versionInfo("VERSION_NUM"))
@@ -28,7 +27,6 @@ suite "test gdal vector":
         layerByName = ds[layerName]
       check:
         layer == layerByName
-
         layer.featureCount == 4
         layer.layerDefn.fieldCount == 2
 
@@ -72,17 +70,20 @@ suite "test gdal vector":
           geom.getY(0) == 0.0893
 
           geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
-          geom.exportToWkt == "POINT (100.2785 0.0893)"        
+          geom.exportToWkt == "POINT (100.2785 0.0893)"      
+        echo geom.exportToWkb(wkbNDR)
         
-  test "write to OGR":
+  test "Writing to OGR":
     let
       pointSharpFile = outDir/"point_out.shp"
       driverName = "ESRI Shapefile"
-      driver = ogrGetDriverByName(driverName)
+      driver = getDriverByName(driverName)
     
     check not isNil(driver)
 
-    driver.withCreateDataSource(ds, pointSharpFile):
+    # driver.withCreateDataSource(ds, pointSharpFile):
+    driver.withCreateDataset(ds, pointSharpFile, 0, 0, 0, GDT_Unknown, nil):
+      # let layer = ds.createLayer("point_out", nil, wkbPoint, nil)
       let layer = ds.createLayer("point_out", nil, wkbPoint, nil)
 
       # layer.createField("Name", OFTString, 32)
