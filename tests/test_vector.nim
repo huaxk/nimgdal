@@ -9,6 +9,33 @@ suite "test vector api":
   setup:
     allRegister()
 
+  test "Import geometry from wkt":
+    var geom = createGeometry(wkbPoint)
+    defer: geom.destroyGeometry()
+    let wktstr = "POINT (100.2785 0.0893)"
+    geom.importFromWkt([wktstr])
+    check geom.exportToWkt == [wktstr]
+    geom.importFromWktStr(wktstr)
+    check geom.exportToWktStr == wktstr
+
+  test "Import geometry from wkb":
+    var geom = createGeometry(wkbPoint)
+    defer: geom.destroyGeometry
+    # let wkbstr = "\x01" &
+    #               "\x01\x00\x00\x00" &
+    #               "\x00\x00\x00\x00\x00\x00\x00\x00" &
+    #               "\x00\x00\x00\x00\x00\x00\xf0?"
+    # geom.importFromWkb(wkbstr)
+    # check geom.exportToWkb(wkbNDR) == wkbstr
+    let wkbhex = "01"&
+                  "01000000"&
+                  "000000000000F03F"&
+                  "0000000000000040"
+    echo wkbhex
+    echo wkbhex.parseHexStr
+    geom.importFromWkbHex(wkbhex)
+
+
   test "Reading from OGR DataSource":
     withDataSource(ds, filename, false, nil):
       let
@@ -54,7 +81,7 @@ suite "test vector api":
         geom.getY(0) == 0.0
 
         geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.0, 0.0 ] }"""
-        geom.exportToWkt == "POINT (100 0)"
+        geom.exportToWktStr == "POINT (100 0)"
 
       layer.withFeature(ft1, 1):
         check:
@@ -70,8 +97,8 @@ suite "test vector api":
           geom.getY(0) == 0.0893
 
           geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
-          geom.exportToWkt == "POINT (100.2785 0.0893)"      
-        echo geom.exportToWkb(wkbNDR)
+          geom.exportToWktStr == "POINT (100.2785 0.0893)"      
+        # echo geom.exportToWkbHex(wkbNDR)
         
   test "Writing to OGR":
     let

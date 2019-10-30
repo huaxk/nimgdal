@@ -1,6 +1,6 @@
-import times, math
-import wrap/ogr_api
-export ogr_api except exportToJson, exportToWkb
+import times, math, strutils
+import wrap/[ogr_api, cpl_error]
+export ogr_api except exportToJson, exportToWkb, importFromWkb
 
 type
   Field = object
@@ -65,8 +65,8 @@ proc asStringList*(field: Field): seq[string] =
   let idx = field.idx.cint
   doAssert field.feature.getFieldDefnRef(idx).getType == OFTStringList
   let value = field.feature.getFieldAsStringList(idx)
+  defer: deallocCStringArray(value)
   result = value.cstringArrayToSeq
-  # deallocCStringArray(value)
 
 proc asBinary*(field: Field): seq[char] =
   let idx = field.idx.cint
@@ -354,19 +354,40 @@ proc name*(geom: OGRGeometryH): string {.inline.} =
 proc type*(geom: OGRGeometryH): OGRwkbGeometryType {.inline.} =
   result = geom.getGeometryType
 
-proc exportToJson*(geom: OGRGeometryH): string = 
-  result = $ogr_api.exportToJson(geom)
+proc importFromWkt*(geom: OGRGeometryH, input: openArray[string]) =
+  let
+    inputArray = input.allocCStringArray()
+    error = geom.importFromWkt(inputArray)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to import geometry from wkt: " & $input)
 
-proc exportToWkt*(geom: OGRGeometryH): string =
+proc importFromWktStr*(geom: OGRGeometryH, input: string) =
+  let inputArray = input.split("\n")
+  geom.importFromWkt(inputArray)
+
+proc exportToWkt*(geom: OGRGeometryH): seq[string] =
   var wktArray = allocCStringArray([])
   # defer: deallocCStringArray(wktArray)
-  let error = geom.exportToWkt(wktArray)
+  let error = geom.exportToWkt(wktArray)  
   if error == OGRERR_NONE:
-    let wkt = wktArray.cstringArrayToSeq
-    for i in 0..wkt.len-1:
-      result &= wkt[i]
-      if i < wkt.len-1:
-        result &= "\n"
+    result = wktArray.cstringArrayToSeq()
+  else:
+    result = @[]
+
+proc exportToWktStr*(geom: OGRGeometryH): string =
+  let wkt = geom.exportToWkt()
+  for i in 0..wkt.len-1:
+    result &= wkt[i]
+    if i < wkt.len-1:
+      result &= "\n"
+
+proc importFromWkb*(geom: OGRGeometryH, data: cstring) =
+  let
+    pdata = cast[ptr cuchar](data)
+    size = sizeof(pdata)
+    error = geom.importFromWkb(pdata, size.cint)
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to import geometry from wkb: " & $error)
 
 proc exportToWkb*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string =
   let size = geom.wkbSize
@@ -375,6 +396,16 @@ proc exportToWkb*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string =
   let error = geom.exportToWkb(eOrder, wkb)
   if error != OGRERR_NONE:
     result = ""
+
+proc importFromWkbHex*(geom: OGRGeometryH, data: string) {.inline.} =
+  let wkb = data.parseHexStr
+  geom.importFromWkb(wkb.cstring)
+
+proc exportToWkbHex*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string {.inline.} =
+  result = geom.exportToWkb(eOrder).toHex
+
+proc exportToJson*(geom: OGRGeometryH): string = 
+  result = $ogr_api.exportToJson(geom)
 
 # template
 template withDataSource*(hDS: untyped,
