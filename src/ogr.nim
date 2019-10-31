@@ -1,9 +1,21 @@
 import times, math, strutils
-import wrap/[ogr_api, cpl_error]
+import wrap/ogr_api
 export ogr_api except exportToJson, exportToWkb, importFromWkb
 
 type
-  Field = object
+  Geometry {.inheritable .} = object
+    ogrGeometryH*: OGRGeometryH
+  Point = object of Geometry
+
+proc `=destroy`(pt: var Point) =
+  pt.ogrGeometryH.destroyGeometry
+  echo "point destroy"
+
+proc newPoint*(): Point =
+  result = Point(ogrGeometryH: createGeometry(wkbPoint))
+
+type
+  Field = ref object
     feature: OGRFeatureH
     idx: int
 

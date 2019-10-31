@@ -8,6 +8,9 @@ const filename = dataDir/"point.json"
 echo versionInfo("GDAL_VERSION_NUM")
 
 suite "test geometry api":
+  test "Point":
+    let point = newPoint()
+
   test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)
     defer: geom.destroyGeometry()
