@@ -381,11 +381,10 @@ proc exportToWktStr*(geom: OGRGeometryH): string =
     if i < wkt.len-1:
       result &= "\n"
 
-proc importFromWkb*(geom: OGRGeometryH, data: cstring) =
+proc importFromWkb*(geom: OGRGeometryH, data: string) =
   let
-    pdata = cast[ptr cuchar](data)
-    size = sizeof(pdata)
-    error = geom.importFromWkb(pdata, size.cint)
+    pdata = cast[ptr cuchar](data.cstring)
+    error = geom.importFromWkb(pdata, data.len.cint)
   if error != OGRERR_NONE:
     raiseAssert("Fail to import geometry from wkb: " & $error)
 
@@ -399,7 +398,7 @@ proc exportToWkb*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string =
 
 proc importFromWkbHex*(geom: OGRGeometryH, data: string) {.inline.} =
   let wkb = data.parseHexStr
-  geom.importFromWkb(wkb.cstring)
+  geom.importFromWkb(wkb)
 
 proc exportToWkbHex*(geom: OGRGeometryH, eOrder: OGRwkbByteOrder): string {.inline.} =
   result = geom.exportToWkb(eOrder).toHex

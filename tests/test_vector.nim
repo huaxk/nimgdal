@@ -5,9 +5,12 @@ const dataDir = currentSourcePath.parentDir()/"data"
 const outDir = currentSourcePath.parentDir()/"out"
 const filename = dataDir/"point.json"
 
+echo versionInfo("GDAL_VERSION_NUM")
+
 suite "test vector api":
   setup:
     allRegister()
+
 
   test "Import geometry from wkt":
     var geom = createGeometry(wkbPoint)
@@ -21,19 +24,18 @@ suite "test vector api":
   test "Import geometry from wkb":
     var geom = createGeometry(wkbPoint)
     defer: geom.destroyGeometry
-    # let wkbstr = "\x01" &
-    #               "\x01\x00\x00\x00" &
-    #               "\x00\x00\x00\x00\x00\x00\x00\x00" &
-    #               "\x00\x00\x00\x00\x00\x00\xf0?"
-    # geom.importFromWkb(wkbstr)
-    # check geom.exportToWkb(wkbNDR) == wkbstr
+    let wkbstr = "\x01" &
+                  "\x01\x00\x00\x00" &
+                  "\x00\x00\x00\x00\x00\x00\x00\x00" &
+                  "\x00\x00\x00\x00\x00\x00\xf0?"
+    geom.importFromWkb(wkbstr)
+    check geom.exportToWkb(wkbNDR) == wkbstr
     let wkbhex = "01"&
                   "01000000"&
                   "000000000000F03F"&
                   "0000000000000040"
-    echo wkbhex
-    echo wkbhex.parseHexStr
     geom.importFromWkbHex(wkbhex)
+    check geom.exportToWkbHex(wkbNDR) == wkbhex
 
 
   test "Reading from OGR DataSource":
@@ -98,7 +100,6 @@ suite "test vector api":
 
           geom.exportToJson == """{ "type": "Point", "coordinates": [ 100.2785, 0.0893 ] }"""
           geom.exportToWktStr == "POINT (100.2785 0.0893)"      
-        # echo geom.exportToWkbHex(wkbNDR)
         
   test "Writing to OGR":
     let
