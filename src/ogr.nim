@@ -3,18 +3,6 @@ import wrap/ogr_api
 export ogr_api except exportToJson, exportToWkb, importFromWkb
 
 type
-  Geometry {.inheritable .} = object
-    ogrGeometryH*: OGRGeometryH
-  Point = object of Geometry
-
-proc `=destroy`(pt: var Point) =
-  pt.ogrGeometryH.destroyGeometry
-  echo "point destroy"
-
-proc newPoint*(): Point =
-  result = Point(ogrGeometryH: createGeometry(wkbPoint))
-
-type
   Field = ref object
     feature: OGRFeatureH
     idx: int
@@ -480,3 +468,72 @@ template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
   let error = feature.setGeometryDirectly(geom)
   if error != OGRERR_NONE:
     raiseAssert("Fail to set geometry")
+
+
+
+# type
+#   GeometryObj {.inheritable .} = object
+#     ogrGeometryH*: OGRGeometryH
+#   Geometry* = ref GeometryObj
+#   PointObj = object of GeometryObj
+#   Point* = ref PointObj
+
+# template deref*(T: typedesc[ref|ptr]): typedesc =
+#   typeof(default(T)[])
+
+# proc `=destroy`(pt: var deref(Point)) =
+#   pt.ogrGeometryH.destroyGeometry
+#   echo "point destroy"
+
+# # macro finalizer*(fn: untyped): untyped =
+# #   let ref_typ = fn.params[1][1]
+# #   fn.params[1][1] = nnkVarTy.newTree(quote do: typeof(default(`ref_typ`)[]))
+# #   result = fn
+
+# # proc `=destroy`(self: MyRef) {.finalizer.} = discard
+
+# # proc `=destroy`[T: Geometry](geom: var T) =
+# #   geom.ogrGeometryH.destroyGeometry
+# #   echo "point destroy"
+
+# proc newPoint*(): Point =
+#   result = Point(ogrGeometryH: createGeometry(wkbPoint))
+#   result.ogrGeometryH.setPoint_2D(0, 100.123, 0.123)
+
+# proc exportToWkt*(geom: Geometry): string =
+#   result = geom.ogrGeometryH.exportToWktStr()
+
+# proc exportToWkt*(geom: Point): string =
+#   echo "Point wkt:"
+#   result = geom.ogrGeometryH.exportToWktStr()
+
+type
+  Point* = object
+    handle*: OGRGeometryH
+  LineString* = object
+    handle*: OGRGeometryH
+
+  Geometry* = Point|LineString
+
+proc `=destroy`(pt: var Point) =
+  if not isNil(pt.handle):
+    echo "destroy: " & repr pt.addr
+  pt.handle.destroyGeometry
+
+proc `=`*(a: var Point, b: Point) {.error: "owned refs can only be moved".}
+
+# proc `=`*(a: var Point, b: Point) =
+#   if a.handle == b.handle: return
+#   `=destroy`(a)
+#   a.handle = b.handle
+
+proc `=sink`*(a: var Point, b: Point) =
+  `=destroy`(a)
+  a.handle = b.handle
+
+proc newPoint*(x: float, y: float): Point =
+  result = Point(handle: createGeometry(wkbPoint))
+  result.handle.setPoint_2D(0, x, y)
+
+proc exportToWkt*(geom: Geometry): string =
+  result = geom.handle.exportToWktStr()

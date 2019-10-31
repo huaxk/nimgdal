@@ -9,7 +9,11 @@ echo versionInfo("GDAL_VERSION_NUM")
 
 suite "test geometry api":
   test "Point":
-    let point = newPoint()
+    var pt = newPoint(1.0, 2.0)
+    echo pt.exportToWkt
+    var pt2 = newPoint(3.0, 4.0)
+    pt = pt2
+    echo pt.exportToWkt
 
   test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)
