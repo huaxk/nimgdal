@@ -7,12 +7,8 @@ const filename = dataDir/"point.json"
 
 echo versionInfo("GDAL_VERSION_NUM")
 
-suite "test vector api":
-  setup:
-    allRegister()
-
-
-  test "Import geometry from wkt":
+suite "test geometry api":
+  test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)
     defer: geom.destroyGeometry()
     let wktstr = "POINT (100.2785 0.0893)"
@@ -21,12 +17,12 @@ suite "test vector api":
     geom.importFromWktStr(wktstr)
     check geom.exportToWktStr == wktstr
 
-  test "Import geometry from wkb":
+  test "Import from wkb and export to wkb":
     var geom = createGeometry(wkbPoint)
     defer: geom.destroyGeometry
     let wkbstr = "\x01" &
                   "\x01\x00\x00\x00" &
-                  "\x00\x00\x00\x00\x00\x00\x00\x00" &
+                  "\x00\x00\x00\x00\x00\x00\x00\x01" &
                   "\x00\x00\x00\x00\x00\x00\xf0?"
     geom.importFromWkb(wkbstr)
     check geom.exportToWkb(wkbNDR) == wkbstr
@@ -37,6 +33,16 @@ suite "test vector api":
     geom.importFromWkbHex(wkbhex)
     check geom.exportToWkbHex(wkbNDR) == wkbhex
 
+  test "Create geometry from geojson and export to json":
+    let
+      geojson = """{ "type": "Point", "coordinates": [ 100.0, 200.0 ] }"""
+      geom = createGeometryFromJson(geojson)
+    defer: geom.destroyGeometry
+    check geom.exportToJson == geojson
+
+suite "test vector api":
+  setup:
+    allRegister()
 
   test "Reading from OGR DataSource":
     withDataSource(ds, filename, false, nil):
