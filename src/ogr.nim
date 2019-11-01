@@ -508,32 +508,44 @@ template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
 #   result = geom.ogrGeometryH.exportToWktStr()
 
 type
-  Point* = object
+  Geometry* {.inheritable .} = object
     handle*: OGRGeometryH
-  LineString* = object
-    handle*: OGRGeometryH
+  Point* = object of Geometry
+  LineString* = object of Geometry
 
-  Geometry* = Point|LineString
 
 proc `=destroy`(pt: var Point) =
-  if not isNil(pt.handle):
+  if pt.handle != nil:
     echo "destroy: " & repr pt.addr
-  pt.handle.destroyGeometry
+    pt.handle.destroyGeometry
+    pt.handle = nil
 
-proc `=`*(a: var Point, b: Point) {.error: "owned refs can only be moved".}
+proc `=`*(dest: var Point, source: Point) {.error: "owned refs can only be moved".}
 
-# proc `=`*(a: var Point, b: Point) =
-#   if a.handle == b.handle: return
-#   `=destroy`(a)
-#   a.handle = b.handle
+# proc `=`*(dest: var Point, source: Point) =
+#   if dest.handle == source.handle: return
+#   `=destroy`(dest)
+#   dest.handle = source.handle
 
-proc `=sink`*(a: var Point, b: Point) =
-  `=destroy`(a)
-  a.handle = b.handle
+proc `=sink`*(dest: var Point, source: Point) =
+  `=destroy`(dest)
+  dest.handle = source.handle
 
 proc newPoint*(x: float, y: float): Point =
   result = Point(handle: createGeometry(wkbPoint))
   result.handle.setPoint_2D(0, x, y)
 
-proc exportToWkt*(geom: Geometry): string =
+proc exportToWktStr*(geom: Geometry): string =
   result = geom.handle.exportToWktStr()
+
+proc setGeometryDirectly*(ft: OGRFeatureH; geom: sink Point) =
+  let error = ft.setGeometryDirectly(geom.handle) 
+  if error == OGRERR_NONE:
+    wasMoved(geom)
+  else:
+    raiseAssert("Fail to set geometry directly: " & $error)
+
+proc setGeometry*(ft: OGRFeatureH; geom: Point) =
+  let error = ft.setGeometry(geom.handle) 
+  if error != OGRERR_NONE:
+    raiseAssert("Fail to set geometry directly: " & $error)
