@@ -478,8 +478,8 @@ template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
 #   PointObj = object of GeometryObj
 #   Point* = ref PointObj
 
-# template deref*(T: typedesc[ref|ptr]): typedesc =
-#   typeof(default(T)[])
+template deref*(T: typedesc[ref|ptr]): typedesc =
+  typeof(default(T)[])
 
 # proc `=destroy`(pt: var deref(Point)) =
 #   pt.ogrGeometryH.destroyGeometry
@@ -508,44 +508,72 @@ template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
 #   result = geom.ogrGeometryH.exportToWktStr()
 
 type
-  Geometry* {.inheritable .} = object
+  Point* = object 
     handle*: OGRGeometryH
-  Point* = object of Geometry
-  LineString* = object of Geometry
+  LineString* = object
+    handle*: OGRGeometryH
+  Polygon* = object
+    handle*: OGRGeometryH
+  MultiPoint* = object
+    handle*: OGRGeometryH
+  MultiLineString* = object
+    handle*: OGRGeometryH
+  MultiPolygon* = object
+    handle*: OGRGeometryH
+  GeometryCollection* = MultiPoint|MultiLineString|MultiPolygon
+  Geometry* = Point|LineString|Polygon|GeometryCollection
 
+template genLifetimehooks(typ: typedesc) =
+  proc `=destroy`(a: var typ) =
+    echo "destroy " & $typ & ": " & repr(a.addr)
+    if a.handle != nil:
+      a.handle.destroyGeometry
+      a.handle = nil
+      echo "handle destory in: " & repr(a.addr)
 
-proc `=destroy`(pt: var Point) =
-  if pt.handle != nil:
-    echo "destroy: " & repr pt.addr
-    pt.handle.destroyGeometry
-    pt.handle = nil
+  proc `=sink`*(dest: var typ, source: typ) =
+    `=destroy`(dest)
+    dest.handle = source.handle
+    echo "sink from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
 
-proc `=`*(dest: var Point, source: Point) {.error: "owned refs can only be moved".}
+  # proc `=`*(dest: var typ, source: typ) {.error: "owned refs can only be moved".}
 
-# proc `=`*(dest: var Point, source: Point) =
-#   if dest.handle == source.handle: return
-#   `=destroy`(dest)
-#   dest.handle = source.handle
+  proc `=`*(dest: var typ, source: typ) =
+    # if dest.handle == source.handle: return
+    `=destroy`(dest)
+    dest.handle = source.handle
+    echo "copy from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
 
-proc `=sink`*(dest: var Point, source: Point) =
-  `=destroy`(dest)
-  dest.handle = source.handle
+genLifetimehooks(Point)
+genLifetimehooks(LineString)
+genLifetimehooks(Polygon)
 
-proc newPoint*(x: float, y: float): Point =
-  result = Point(handle: createGeometry(wkbPoint))
-  result.handle.setPoint_2D(0, x, y)
+proc newPoint*(x, y: float, z=0.0, m=0.0): Point =
+  if z != 0.0 and m != 0.0:
+    result.handle = createGeometry(wkbPointZM)
+    result.handle.setPointZM(0, x, y, z, m)
+  elif z != 0.0:
+    result.handle = createGeometry(wkbPoint25d)
+    result.handle.setPoint(0, x, y, z)
+  elif m != 0.0:
+    result.handle = createGeometry(wkbPointM)
+    result.handle.setPointM(0, x, y, m)
+  else:
+    result.handle = createGeometry(wkbPoint)
+    result.handle.setPoint_2D(0, x, y)
+  echo "new Point: " & repr(result.addr)
 
 proc exportToWktStr*(geom: Geometry): string =
   result = geom.handle.exportToWktStr()
 
-proc setGeometryDirectly*(ft: OGRFeatureH; geom: sink Point) =
+proc setGeometryDirectly*[T: Geometry](ft: OGRFeatureH; geom: sink T) =
   let error = ft.setGeometryDirectly(geom.handle) 
   if error == OGRERR_NONE:
     wasMoved(geom)
   else:
     raiseAssert("Fail to set geometry directly: " & $error)
 
-proc setGeometry*(ft: OGRFeatureH; geom: Point) =
+proc setGeometry*(ft: OGRFeatureH; geom: Geometry) =
   let error = ft.setGeometry(geom.handle) 
   if error != OGRERR_NONE:
     raiseAssert("Fail to set geometry directly: " & $error)
