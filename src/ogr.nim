@@ -353,9 +353,6 @@ proc name*(geom: OGRGeometryH): string {.inline.} =
 
 proc type*(geom: OGRGeometryH): OGRwkbGeometryType {.inline.} =
   result = geom.getGeometryType
-  # if result in [wkbPoint25D, wkbLineString25D, wkbPolygon25D, wkbMultiPoint25D, wkbMultiLineString25D, wkbMultiPolygon25D, wkbGeometryCollection25D]:
-  #   result = OGRwkbGeometryType(result.cuint)
-  if result == wkbPoint25D: result = OGRwkbGeometryType(wkbPoint25D.cuint)
 
 proc importFromWkt*(geom: OGRGeometryH, input: openArray[string]) =
   let
@@ -481,8 +478,8 @@ template withSetGeometryDirectly*(feature: OGRFeatureH, geom: untyped,
 #   PointObj = object of GeometryObj
 #   Point* = ref PointObj
 
-template deref*(T: typedesc[ref|ptr]): typedesc =
-  typeof(default(T)[])
+# template deref*(T: typedesc[ref|ptr]): typedesc =
+#   typeof(default(T)[])
 
 # proc `=destroy`(pt: var deref(Point)) =
 #   pt.ogrGeometryH.destroyGeometry
@@ -494,21 +491,6 @@ template deref*(T: typedesc[ref|ptr]): typedesc =
 # #   result = fn
 
 # # proc `=destroy`(self: MyRef) {.finalizer.} = discard
-
-# # proc `=destroy`[T: Geometry](geom: var T) =
-# #   geom.ogrGeometryH.destroyGeometry
-# #   echo "point destroy"
-
-# proc newPoint*(): Point =
-#   result = Point(ogrGeometryH: createGeometry(wkbPoint))
-#   result.ogrGeometryH.setPoint_2D(0, 100.123, 0.123)
-
-# proc exportToWkt*(geom: Geometry): string =
-#   result = geom.ogrGeometryH.exportToWktStr()
-
-# proc exportToWkt*(geom: Point): string =
-#   echo "Point wkt:"
-#   result = geom.ogrGeometryH.exportToWktStr()
 
 type
   Point* = object 
@@ -523,48 +505,94 @@ type
     handle*: OGRGeometryH
   MultiPolygon* = object
     handle*: OGRGeometryH
+  # Curve* = LineString
   GeometryCollection* = MultiPoint|MultiLineString|MultiPolygon
   Geometry* = Point|LineString|Polygon|GeometryCollection
 
 template genLifetimehooks(typ: typedesc) =
   proc `=destroy`(a: var typ) =
-    echo "destroy " & $typ & ": " & repr(a.addr)
+    # echo "destroy " & $typ & ": " & repr(a.addr)
     if a.handle != nil:
       a.handle.destroyGeometry
       a.handle = nil
-      echo "handle destory in: " & repr(a.addr)
+      # echo "handle destory in: " & repr(a.addr)
 
   proc `=sink`*(dest: var typ, source: typ) =
     `=destroy`(dest)
     dest.handle = source.handle
-    echo "sink from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
+    # echo "sink from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
 
-  # proc `=`*(dest: var typ, source: typ) {.error: "owned refs can only be moved".}
+  proc `=`*(dest: var typ, source: typ) {.error: "owned refs can only be moved".}
 
-  proc `=`*(dest: var typ, source: typ) =
-    # if dest.handle == source.handle: return
-    `=destroy`(dest)
-    dest.handle = source.handle
-    echo "copy from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
+  # proc `=`*(dest: var typ, source: typ) =
+  #   # if dest.handle == source.handle: return
+  #   `=destroy`(dest)
+  #   dest.handle = source.handle
+  #   echo "copy from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
 
 genLifetimehooks(Point)
 genLifetimehooks(LineString)
 genLifetimehooks(Polygon)
 
-proc newPoint*(x, y: float, z=0.0, m=0.0): Point =
-  if z != 0.0 and m != 0.0:
-    result.handle = createGeometry(wkbPointZM)
-    result.handle.setPointZM(0, x, y, z, m)
-  elif z != 0.0:
-    result.handle = createGeometry(wkbPoint25d)
-    result.handle.setPoint(0, x, y, z)
-  elif m != 0.0:
-    result.handle = createGeometry(wkbPointM)
-    result.handle.setPointM(0, x, y, m)
-  else:
-    result.handle = createGeometry(wkbPoint)
-    result.handle.setPoint_2D(0, x, y)
-  echo "new Point: " & repr(result.addr)
+proc type*(geom: Geometry): OGRwkbGeometryType =
+  result = geom.handle.getGeometryType
+
+proc newPoint*(x, y, z: float): Point =
+  result.handle = createGeometry(wkbPoint25d) # getGeometryType out of range
+  result.handle.addPoint(x, y, z)
+
+proc newPoint*(x, y: float): Point =
+  result.handle = createGeometry(wkbPoint)
+  result.handle.addPoint_2D(x, y)
+
+proc newPointM*(x, y, m: float): Point =
+  result.handle = createGeometry(wkbPointM)
+  result.handle.addPointM(x, y, m)
+  
+proc newPoint*(x, y, z, m: float): Point = 
+  result.handle = createGeometry(wkbPointZM)
+  result.handle.addPointZM(x, y, z, m)
+
+proc x*(pt: Point): float {.inline.} =
+  result = pt.handle.getX(0)
+
+proc y*(pt: Point): float {.inline.} =
+  result = pt.handle.getY(0)
+
+proc z*(pt: Point): float {.inline.} =
+  result = pt.handle.getZ(0)
+
+proc m*(pt: Point): float {.inline.} =
+  result = pt.handle.getM(0)
+
+proc newLineString*(a: openArray[tuple[x, y: float]]): LineString =
+  result.handle = createGeometry(wkbLineString)
+  for (i, pt) in a.pairs:
+    result.handle.setPoint_2D(i.cint, pt.x, pt.y)
+
+proc newLineString*(a: openArray[tuple[x, y, z: float]]): LineString =
+  result.handle = createGeometry(wkbLineString25D)
+  for (i, pt) in a.pairs:
+    result.handle.setPoint(i.cint, pt.x, pt.y, pt.z)
+
+proc newLineStringM*(a: openArray[tuple[x, y, m: float]]): LineString =
+  result.handle = createGeometry(wkbLineStringM)
+  for (i, pt) in a.pairs:
+    result.handle.setPointM(i.cint, pt.x, pt.y, pt.m)
+
+proc newLineString*(a: openArray[tuple[x, y, z, m: float]]): LineString =
+  result.handle = createGeometry(wkbLineStringM)
+  for (i, pt) in a.pairs:
+    result.handle.setPointZM(i.cint, pt.x, pt.y, pt.z, pt.m)
+
+proc addPoint*(ls: LineString, pt: Point) =
+  assert ls.type == wkbLineString25D and pt.type == wkbPoint25D
+  ls.handle.addPoint(pt.x, pt.y, pt.z)
+
+proc `[]`*(ls: LineString, idx: int): Point =
+  var x, y, z: float
+  ls.handle.getPoint(idx.cint, x.addr, y.addr, z.addr)
+  result.handle.addPoint(x, y, z)
 
 proc exportToWktStr*(geom: Geometry): string =
   result = geom.handle.exportToWktStr()

@@ -8,9 +8,25 @@ const filename = dataDir/"point.json"
 echo versionInfo("GDAL_VERSION_NUM")
 
 suite "test geometry api":
-  # test "Point":
-  #   var pt = newPoint(1.0, 2.0)
-  #   echo pt.exportToWktStr
+  test "Point":
+    let
+      pt = newPoint(1.0, 2.0, 3.0)
+      pt2d = newPoint(1.0, 2.0)
+      ptm = newPointM(1.0, 2.0, 4)
+      ptzm = newPoint(1.0, 2.0, 3.0, 4)
+    check:
+      pt.type == wkbPoint25D
+      pt2d.type == wkbPoint
+      ptm.type == wkbPointM
+      ptzm.type == wkbPointZM
+      ptzm.x == 1.0
+      ptzm.y == 2.0
+      ptzm.z == 3.0
+      ptzm.m == 4
+    
+  test "LineString":
+    let ls = newLineStringM([(1.0, 2.0, 3.0), (3.0, 4.0, 5.0)])
+    check ls.type == wkbLineStringM
 
   test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)
@@ -136,26 +152,14 @@ suite "test vector api":
       layer.withCreateFeature(ft):
         ft["Name"] = "myname"
         ft.withSetGeometryDirectly(pt, wkbPoint):
-          # pt.setPoint_2D(0, 100.123, 0.123)  
-          pt.addPoint(1.0, 2.0, 3.0)
-          echo pt.exportToWktStr
-          echo OGRwkbGeometryType(wkbPoint25D.cuint)
-          echo pt.type
-
-        # var pt = newPoint(100.123, 0.123, z=23)
-        # # pt.handle.flattenTo2D
-        # echo pt.handle.getGeometryType
-        # echo pt.exportToWktStr
-        # # ft.setGeometry(pt)
-        # # ft.setGeometryDirectly(move pt)
-          
+          pt.setPoint_2D(0, 100.123, 0.123)      
       
       check:
         layer[0]["Name"].asString == "myname"
-        # layer[0].geometry.name == "POINT"
-        # layer[0].geometry.type == wkbPoint
-        # layer[0].geometry.getX(0) == 100.123
-        # layer[0].geometry.getY(0) == 0.123
+        layer[0].geometry.name == "POINT"
+        layer[0].geometry.type == wkbPoint
+        layer[0].geometry.getX(0) == 100.123
+        layer[0].geometry.getY(0) == 0.123
 
         ds.getFileList.cstringArrayToSeq == @[outDir/"point_out.shp",
                                               outDir/"point_out.shx",
