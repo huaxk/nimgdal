@@ -135,14 +135,19 @@ suite "test vector api":
     
       layer.withCreateFeature(ft):
         ft["Name"] = "myname"
-        # ft.withSetGeometryDirectly(pt, wkbPoint):
-        #   pt.setPoint_2D(0, 100.123, 0.123)          
-        var pt = newPoint(100.123, 0.123, z=23)
-        # pt.handle.flattenTo2D
-        echo pt.handle.getGeometryType
-        echo pt.exportToWktStr
-        # ft.setGeometry(pt)
-        # ft.setGeometryDirectly(move pt)
+        ft.withSetGeometryDirectly(pt, wkbPoint):
+          # pt.setPoint_2D(0, 100.123, 0.123)  
+          pt.addPoint(1.0, 2.0, 3.0)
+          echo pt.exportToWktStr
+          echo OGRwkbGeometryType(wkbPoint25D.cuint)
+          echo pt.type
+
+        # var pt = newPoint(100.123, 0.123, z=23)
+        # # pt.handle.flattenTo2D
+        # echo pt.handle.getGeometryType
+        # echo pt.exportToWktStr
+        # # ft.setGeometry(pt)
+        # # ft.setGeometryDirectly(move pt)
           
       
       check:

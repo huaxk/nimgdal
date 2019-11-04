@@ -353,6 +353,9 @@ proc name*(geom: OGRGeometryH): string {.inline.} =
 
 proc type*(geom: OGRGeometryH): OGRwkbGeometryType {.inline.} =
   result = geom.getGeometryType
+  # if result in [wkbPoint25D, wkbLineString25D, wkbPolygon25D, wkbMultiPoint25D, wkbMultiLineString25D, wkbMultiPolygon25D, wkbGeometryCollection25D]:
+  #   result = OGRwkbGeometryType(result.cuint)
+  if result == wkbPoint25D: result = OGRwkbGeometryType(wkbPoint25D.cuint)
 
 proc importFromWkt*(geom: OGRGeometryH, input: openArray[string]) =
   let
