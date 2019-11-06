@@ -9,7 +9,9 @@ echo versionInfo("GDAL_VERSION_NUM")
 
 suite "test geometry api":
   test "Point":
+    # GC_fullCollect()
     let
+      # strtmem = getOccupiedMem()
       pt = newPoint(1.0, 2.0, 3.0)
       pt2d = newPoint(1.0, 2.0)
       ptm = newPointM(1.0, 2.0, 4)
@@ -23,6 +25,8 @@ suite "test geometry api":
       ptzm.y == 2.0
       ptzm.z == 3.0
       ptzm.m == 4
+    # GC_fullCollect()
+    # echo "change in occupied memory: ", (getOccupiedMem() - strtmem)
     
   test "LineString":
     let ls = newLineStringM([(1.0, 2.0, 3.0), (3.0, 4.0, 5.0)])
@@ -164,3 +168,4 @@ suite "test vector api":
         ds.getFileList.cstringArrayToSeq == @[outDir/"point_out.shp",
                                               outDir/"point_out.shx",
                                               outDir/"point_out.dbf"]
+
