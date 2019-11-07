@@ -8,29 +8,38 @@ const filename = dataDir/"point.json"
 echo versionInfo("GDAL_VERSION_NUM")
 
 suite "test geometry api":
+  # test "occupiedMem":
+  #   # GC_fullCollect()
+  #   let strtmem = getOccupiedMem()
+  #   for i in 1..100:
+  #     var pt = newPoint(1.0, 2.0)
+  #     pt = newPoint(3.0, 4.0)
+  #   # GC_fullCollect()
+  #   echo "change in occupied memory: ", (getOccupiedMem() - strtmem)
+
   test "Point":
-    # GC_fullCollect()
     let
-      # strtmem = getOccupiedMem()
-      pt = newPoint(1.0, 2.0, 3.0)
       pt2d = newPoint(1.0, 2.0)
-      ptm = newPointM(1.0, 2.0, 4)
+      pt25d = newPoint(1.0, 2.0, z=3.0)
+      ptm = newPoint(1.0, 2.0, m=4.0)
       ptzm = newPoint(1.0, 2.0, 3.0, 4)
     check:
-      pt.type == wkbPoint25D
       pt2d.type == wkbPoint
+      pt25d.type == wkbPoint25D
       ptm.type == wkbPointM
       ptzm.type == wkbPointZM
       ptzm.x == 1.0
       ptzm.y == 2.0
       ptzm.z == 3.0
       ptzm.m == 4
-    # GC_fullCollect()
-    # echo "change in occupied memory: ", (getOccupiedMem() - strtmem)
     
   test "LineString":
-    let ls = newLineStringM([(1.0, 2.0, 3.0), (3.0, 4.0, 5.0)])
-    check ls.type == wkbLineStringM
+    let
+      ls2d = newLineString([(1.0, 2.0), (3.0, 4.0)])
+      lsm = newLineString([(x: 1.0, y: 2.0, m: 3.0), (x: 3.0, y: 4.0, m: 5.0)])
+    check:
+      ls2d.type == wkbLineString
+      lsm.type == wkbLineStringM
 
   test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)

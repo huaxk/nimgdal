@@ -522,7 +522,7 @@ template genLifetimehooks(typ: typedesc) =
     dest.handle = source.handle
     # echo "sink from: " & repr(source.unsafeAddr) & " to: " & repr(dest.addr) 
 
-  proc `=`*(dest: var typ, source: typ) {.error: "owned refs can only be moved".}
+  proc `=`*(dest: var typ, source: typ) {.error: "Geometry owned handle can only be moved".}
 
   # proc `=`*(dest: var typ, source: typ) =
   #   # if dest.handle == source.handle: return
@@ -537,15 +537,15 @@ genLifetimehooks(Polygon)
 proc type*(geom: Geometry): OGRwkbGeometryType =
   result = geom.handle.getGeometryType
 
-proc newPoint*(x, y, z: float): Point =
-  result.handle = createGeometry(wkbPoint25d) # getGeometryType out of range
-  result.handle.addPoint(x, y, z)
-
 proc newPoint*(x, y: float): Point =
   result.handle = createGeometry(wkbPoint)
   result.handle.addPoint_2D(x, y)
 
-proc newPointM*(x, y, m: float): Point =
+proc newPoint*(x, y, z: float): Point =
+  result.handle = createGeometry(wkbPoint25d) # getGeometryType out of range
+  result.handle.addPoint(x, y, z)
+
+proc newPoint*(x, y, m: float): Point =
   result.handle = createGeometry(wkbPointM)
   result.handle.addPointM(x, y, m)
   
@@ -568,22 +568,22 @@ proc m*(pt: Point): float {.inline.} =
 proc newLineString*(a: openArray[tuple[x, y: float]]): LineString =
   result.handle = createGeometry(wkbLineString)
   for (i, pt) in a.pairs:
-    result.handle.setPoint_2D(i.cint, pt.x, pt.y)
+    result.handle.addPoint_2D(pt.x, pt.y)
 
 proc newLineString*(a: openArray[tuple[x, y, z: float]]): LineString =
   result.handle = createGeometry(wkbLineString25D)
   for (i, pt) in a.pairs:
-    result.handle.setPoint(i.cint, pt.x, pt.y, pt.z)
+    result.handle.addPoint(pt.x, pt.y, pt.z)
 
-proc newLineStringM*(a: openArray[tuple[x, y, m: float]]): LineString =
+proc newLineString*(a: openArray[tuple[x, y, m: float]]): LineString =
   result.handle = createGeometry(wkbLineStringM)
   for (i, pt) in a.pairs:
-    result.handle.setPointM(i.cint, pt.x, pt.y, pt.m)
+    result.handle.addPointM(pt.x, pt.y, pt.m)
 
 proc newLineString*(a: openArray[tuple[x, y, z, m: float]]): LineString =
   result.handle = createGeometry(wkbLineStringM)
   for (i, pt) in a.pairs:
-    result.handle.setPointZM(i.cint, pt.x, pt.y, pt.z, pt.m)
+    result.handle.addPointZM(pt.x, pt.y, pt.z, pt.m)
 
 proc addPoint*(ls: LineString, pt: Point) =
   assert ls.type == wkbLineString25D and pt.type == wkbPoint25D
