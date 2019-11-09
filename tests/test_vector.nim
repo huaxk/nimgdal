@@ -20,12 +20,12 @@ suite "test geometry api":
   test "Point":
     let
       pt2d = newPoint(1.0, 2.0)
-      pt25d = newPoint(1.0, 2.0, z=3.0)
+      pt3d = newPoint(1.0, 2.0, z=3.0)
       ptm = newPoint(1.0, 2.0, m=4.0)
       ptzm = newPoint(1.0, 2.0, 3.0, 4)
     check:
       pt2d.type == wkbPoint
-      pt25d.type == wkbPoint25D
+      pt3d.type == wkbPoint25D
       ptm.type == wkbPointM
       ptzm.type == wkbPointZM
       ptzm.x == 1.0
@@ -36,10 +36,48 @@ suite "test geometry api":
   test "LineString":
     let
       ls2d = newLineString([(1.0, 2.0), (3.0, 4.0)])
-      lsm = newLineString([(x: 1.0, y: 2.0, m: 3.0), (x: 3.0, y: 4.0, m: 5.0)])
+      ls3d = newLineString([(x: 1.0, y: 2.0, z: 3.0), (x: 4.0, y: 5.0, z: 6.0)])
+      lsm = newLineString([(x: 1.0, y: 2.0, m: 7.0), (x: 3.0, y: 4.0, m: 8.0)])
+      lszm = newLineString([(x: 1.0, y: 2.0, z: 3.0, m: 7.0), (x: 4.0, y: 5.0, z: 6.0, m: 8.0)])
     check:
       ls2d.type == wkbLineString
+      ls2d.pointCount == 2
+      ls2d[0] == newPoint(1.0, 2.0)
+      ls3d.type == wkbLineString25D
+      ls3d.pointCount == 2
+      ls3d[0] == newPoint(1.0, 2.0, z=3.0)
       lsm.type == wkbLineStringM
+      lsm.pointCount == 2
+      lsm[0] == newPoint(1.0, 2.0, m=7.0)
+      lszm.type == wkbLineStringZM
+      lszm.pointCount == 2
+      lszm[0] == newPoint(1.0, 2.0, 3.0, 7.0)
+ 
+    ls2d.addPoint(newPoint(5.0, 6.0))
+    ls3d.addPoint(newPoint(7.0, 8.0, z=9.0))
+    lsm.addPoint(newPoint(5.0, 6.0, m=9.0))
+    lszm.addPoint(newPoint(7.0, 8.0, 9.0, 10.0))
+    check:
+      ls2d.pointCount == 3
+      ls3d.pointCount == 3
+      lsm.pointCount == 3
+      lszm.pointCount == 3
+
+    ls2d[2] = newPoint(1.0, 2.0)
+    ls3d[2] = newPoint(1.0, 2.0, z=3.0)
+    lsm[2] = newPoint(1.0, 2.0, m=3.0)
+    lszm[2] = newPoint(1.0, 2.0, 3.0, 4.0)
+    echo ls2d.type
+    echo ls2d[0].type
+    echo ls2d[2].x
+    echo ls2d[2].y
+    check:
+      ls2d[2] == newPoint(1.0, 2.0)
+      ls3d[2] == newPoint(1.0, 2.0, z=3.0)
+      lsm[2] == newPoint(1.0, 2.0, m=3.0)
+      lszm[2] == newPoint(1.0, 2.0, 3.0, 4.0)
+
+
 
   test "Import from wkt and export to wkt":
     var geom = createGeometry(wkbPoint)

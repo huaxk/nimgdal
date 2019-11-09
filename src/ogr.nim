@@ -537,6 +537,15 @@ genLifetimehooks(Polygon)
 proc type*(geom: Geometry): OGRwkbGeometryType =
   result = geom.handle.getGeometryType
 
+proc name*(geom: Geometry): string =
+  result = geom.handle.getGeometryName
+
+proc geometryCount*(geom: Geometry): int =
+  result = geom.handle.getGeometryCount
+
+proc dimension*(geom: Geometry): int =
+  result = geom.handle.getDimension
+
 proc newPoint*(x, y: float): Point =
   result.handle = createGeometry(wkbPoint)
   result.handle.addPoint_2D(x, y)
@@ -565,6 +574,13 @@ proc z*(pt: Point): float {.inline.} =
 proc m*(pt: Point): float {.inline.} =
   result = pt.handle.getM(0)
 
+proc `==`*(left, right: Point): bool =
+  result = left.type == right.type and
+           left.x == right.x and
+           left.y == right.y and
+           left.z == right.z and
+           left.m == right.m
+
 proc newLineString*(a: openArray[tuple[x, y: float]]): LineString =
   result.handle = createGeometry(wkbLineString)
   for (i, pt) in a.pairs:
@@ -585,14 +601,55 @@ proc newLineString*(a: openArray[tuple[x, y, z, m: float]]): LineString =
   for (i, pt) in a.pairs:
     result.handle.addPointZM(pt.x, pt.y, pt.z, pt.m)
 
+proc pointCount*(ls: LineString): int =
+  result = ls.handle.getPointCount
+
 proc addPoint*(ls: LineString, pt: Point) =
-  assert ls.type == wkbLineString25D and pt.type == wkbPoint25D
-  ls.handle.addPoint(pt.x, pt.y, pt.z)
+  case pt.type
+  of wkbPoint:
+    assert ls.type == wkbLineString, "Point type is not suitable for LineString type"
+    ls.handle.addPoint_2D(pt.x, pt.y)
+  of wkbPoint25D:
+    assert ls.type == wkbLineString25D, "Point type is not suitable for LineString type"
+    ls.handle.addPoint(pt.x, pt.y, pt.z)
+  of wkbPointM:
+    assert ls.type == wkbLineStringM, "Point type is not suitable for LineString type"
+    ls.handle.addPointM(pt.x, pt.y, pt.m)
+  of wkbPointZM:
+    assert ls.type == wkbLineStringZM, "Point type is not suitable for LineString type"
+    ls.handle.addPointZM(pt.x, pt.y, pt.z, pt.m)
+  else: discard
 
 proc `[]`*(ls: LineString, idx: int): Point =
-  var x, y, z: float
-  ls.handle.getPoint(idx.cint, x.addr, y.addr, z.addr)
-  result.handle.addPoint(x, y, z)
+  assert idx < ls.pointCount, "idx great than linestring point count"
+  var x, y, z, m: float
+  case ls.type:
+  of wkbLineString:
+    ls.handle.getPoint(idx.cint, x.addr, y.addr, z.addr)
+    result = newPoint(x, y)
+  of wkbLineString25D:
+    ls.handle.getPoint(idx.cint, x.addr, y.addr, z.addr)
+    result = newPoint(x, y, z=z)
+  of wkbLineStringM:
+    ls.handle.getPointZM(idx.cint, x.addr, y.addr, z.addr, m.addr)
+    result = newPoint(x, y, m=m)
+  of wkbLineStringZM:
+    ls.handle.getPointZM(idx.cint, x.addr, y.addr, z.addr, m.addr)
+    result = newPoint(x, y, z, m)
+  else: discard
+
+proc `[]=`*(ls: LineString, idx: int, pt: Point) =
+  assert idx < ls.pointCount, "idx great than linestring point count"
+  case ls.type:
+  of wkbLineString:
+    ls.handle.setPoint_2D(idx.cint, pt.x, pt.y)
+  of wkbLineString25D:
+    ls.handle.setPoint(idx.cint, pt.x, pt.y, pt.z)
+  of wkbLineStringM:
+    ls.handle.setPointM(idx.cint, pt.x, pt.y, pt.m)
+  of wkbLineStringZM:
+    ls.handle.setPointZM(idx.cint, pt.x, pt.y, pt.z, pt.m)
+  else: discard
 
 proc exportToWktStr*(geom: Geometry): string =
   result = geom.handle.exportToWktStr()
