@@ -67,16 +67,16 @@ suite "test geometry api":
     ls3d[2] = newPoint(1.0, 2.0, z=3.0)
     lsm[2] = newPoint(1.0, 2.0, m=3.0)
     lszm[2] = newPoint(1.0, 2.0, 3.0, 4.0)
-    echo ls2d.type
-    echo ls2d[0].type
-    echo ls2d[2].x
-    echo ls2d[2].y
     check:
       ls2d[2] == newPoint(1.0, 2.0)
       ls3d[2] == newPoint(1.0, 2.0, z=3.0)
       lsm[2] == newPoint(1.0, 2.0, m=3.0)
       lszm[2] == newPoint(1.0, 2.0, 3.0, 4.0)
-
+    
+  test "polygon":
+    var ls = newLinearRing([(1.0, 2.0), (3.0, 4.0), (5.0, 6.0)])
+    echo ls.exportToWktStr
+    echo ls.area()
 
 
   test "Import from wkt and export to wkt":

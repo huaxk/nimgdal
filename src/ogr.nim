@@ -497,6 +497,9 @@ type
     handle*: OGRGeometryH
   LineString* = object
     handle*: OGRGeometryH
+  # LinearRing* {.borrow: `.`.} = distinct LineString
+  LinearRing = object
+    handle*: OGRGeometryH
   Polygon* = object
     handle*: OGRGeometryH
   MultiPoint* = object
@@ -507,7 +510,7 @@ type
     handle*: OGRGeometryH
   # Curve* = LineString
   GeometryCollection* = MultiPoint|MultiLineString|MultiPolygon
-  Geometry* = Point|LineString|Polygon|GeometryCollection
+  Geometry* = Point|LineString|LinearRing|Polygon|GeometryCollection
 
 template genLifetimehooks(typ: typedesc) =
   proc `=destroy`(a: var typ) =
@@ -650,6 +653,33 @@ proc `[]=`*(ls: LineString, idx: int, pt: Point) =
   of wkbLineStringZM:
     ls.handle.setPointZM(idx.cint, pt.x, pt.y, pt.z, pt.m)
   else: discard
+
+proc newLinearRing*(a: openArray[tuple[x, y: float]]): LinearRing =
+  result.handle = createGeometry(wkbLinearRing)
+  for pt in a:
+    result.handle.addPoint_2D(pt.x, pt.y)
+  result.handle.closeRings()
+
+proc newLinearRing*(a: openArray[tuple[x, y, z: float]]): LinearRing =
+  result.handle = createGeometry(wkbLinearRing)
+  for pt in a:
+    result.handle.addPoint(pt.x, pt.y, pt.z)
+  result.handle.closeRings()
+
+proc newLinearRing*(a: openArray[tuple[x, y, m: float]]): LinearRing =
+  result.handle = createGeometry(wkbLinearRing)
+  for pt in a:
+    result.handle.addPointM(pt.x, pt.y, pt.m)
+  result.handle.closeRings()
+
+proc newLinearRing*(a: openArray[tuple[x, y, z, m: float]]): LinearRing =
+  result.handle = createGeometry(wkbLinearRing)
+  for pt in a:
+    result.handle.addPointZM(pt.x, pt.y, pt.z, pt.m)
+  result.handle.closeRings()
+
+# proc area*(lr: LinearRing): float =
+#   result = lr.handle.area
 
 proc exportToWktStr*(geom: Geometry): string =
   result = geom.handle.exportToWktStr()
